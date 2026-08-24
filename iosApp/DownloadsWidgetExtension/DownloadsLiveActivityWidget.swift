@@ -123,7 +123,7 @@ private struct DownloadActivityLockScreenView: View {
             LinearGradient(
                 colors: backgroundGradientColors,
                 startPoint: .topLeading,
-                endPoint: .bottomTrailing,
+                endPoint: .bottomTrailing
             )
 
             VStack(alignment: .leading, spacing: 12) {
@@ -169,7 +169,7 @@ private struct DownloadActivityLockScreenView: View {
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.white.opacity(0.10), lineWidth: 1),
+                .stroke(Color.white.opacity(0.10), lineWidth: 1)
         )
         .activityBackgroundTint(.clear)
         .activitySystemActionForegroundColor(.white)
