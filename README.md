@@ -7,14 +7,15 @@
   <p><strong>Unofficial iOS fork of Nuvio Enhanced with automated CI/CD IPA compilation and SideStore / AltStore community sources.</strong></p>
 
   <p>
-    <a href="https://github.com"><img src="https://img.shields.io/badge/Platform-iOS%20%7C%20iPadOS-blue?style=for-the-badge&logo=apple" alt="iOS & iPadOS" /></a>
-    <a href="https://github.com"><img src="https://img.shields.io/badge/SideStore-Compatible-7B2FF7?style=for-the-badge" alt="SideStore Compatible" /></a>
-    <a href="https://github.com"><img src="https://img.shields.io/badge/AltStore-Compatible-2496ED?style=for-the-badge" alt="AltStore Compatible" /></a>
-    <a href="https://github.com"><img src="https://img.shields.io/badge/TrollStore-Ready-orange?style=for-the-badge" alt="TrollStore Ready" /></a>
+    <a href="sidestore://source?url=https%3A%2F%2Fraw.githubusercontent.com%2Filluminati945%2FNuvioMobile-iOS%2Fmain%2FNuvioEnhanced.json"><img src="https://img.shields.io/badge/Add%20to-SideStore-7B2FF7?style=for-the-badge&logo=apple&logoColor=white" alt="Add to SideStore" /></a>
+    <a href="altstore://source?url=https%3A%2F%2Fraw.githubusercontent.com%2Filluminati945%2FNuvioMobile-iOS%2Fmain%2FNuvioEnhanced.json"><img src="https://img.shields.io/badge/Add%20to-AltStore-2496ED?style=for-the-badge&logo=apple&logoColor=white" alt="Add to AltStore" /></a>
+    <a href="https://github.com/illuminati945/NuvioMobile-iOS/releases/latest"><img src="https://img.shields.io/badge/Install%20with-LiveContainer-30B0C7?style=for-the-badge&logo=apple&logoColor=white" alt="Install with LiveContainer" /></a>
+    <a href="apple-magnifier://install?url=https%3A%2F%2Fgithub.com%2Filluminati945%2FNuvioMobile-iOS%2Freleases%2Fdownload%2Fv0.4.12%2FNuvio-v0.4.12-Enhanced.ipa"><img src="https://img.shields.io/badge/Install%20with-TrollStore-FF5C00?style=for-the-badge&logo=apple&logoColor=white" alt="Install with TrollStore" /></a>
+    <a href="https://github.com/illuminati945/NuvioMobile-iOS/releases/latest"><img src="https://img.shields.io/badge/Download-IPA%20Package-2EA44F?style=for-the-badge&logo=github&logoColor=white" alt="Download IPA" /></a>
   </p>
 
   <p>
-    <a href="#-quick-install-sidestore--altstore">SideStore Source</a> •
+    <a href="#-1-click-install--sources">1-Click Install</a> •
     <a href="#-features">Features</a> •
     <a href="#-automated-github-actions-builds">Automated Builds</a> •
     <a href="#-sideloading-instructions">Installation</a> •
@@ -25,18 +26,21 @@
 
 ---
 
-## ⚡ Quick Install: SideStore & AltStore
+## ⚡ 1-Click Install & Sources
 
-Add this repository as a community source to your sideload manager for automatic updates:
+Tap a button on your iOS device to add the source or install directly:
+
+| Sideload Manager | Quick Action | Manual Source URL |
+|---|---|---|
+| **SideStore** | [**📲 Add to SideStore**](sidestore://source?url=https%3A%2F%2Fraw.githubusercontent.com%2Filluminati945%2FNuvioMobile-iOS%2Fmain%2FNuvioEnhanced.json) | `https://raw.githubusercontent.com/illuminati945/NuvioMobile-iOS/main/NuvioEnhanced.json` |
+| **AltStore** | [**📲 Add to AltStore**](altstore://source?url=https%3A%2F%2Fraw.githubusercontent.com%2Filluminati945%2FNuvioMobile-iOS%2Fmain%2FNuvioEnhanced.json) | `https://raw.githubusercontent.com/illuminati945/NuvioMobile-iOS/main/NuvioEnhanced.json` |
+| **LiveContainer / LiveLauncher** | [**📦 Get Latest IPA**](https://github.com/illuminati945/NuvioMobile-iOS/releases/latest) | Select `.ipa` in LiveContainer `+` menu |
+| **TrollStore** | [**⚡ 1-Tap Install**](apple-magnifier://install?url=https%3A%2F%2Fgithub.com%2Filluminati945%2FNuvioMobile-iOS%2Freleases%2Fdownload%2Fv0.4.12%2FNuvio-v0.4.12-Enhanced.ipa) | Open IPA in TrollStore |
+| **Direct IPA** | [**⬇️ Download `.ipa`**](https://github.com/illuminati945/NuvioMobile-iOS/releases/latest) | GitHub Releases |
 
 ```text
 https://raw.githubusercontent.com/illuminati945/NuvioMobile-iOS/main/NuvioEnhanced.json
 ```
-
-| Source Variant | Description | Community Source URL |
-|---|---|---|
-| **Nuvio Enhanced** *(Recommended)* | Full features, Live TV, custom player options & tweaks | `.../NuvioEnhanced.json` |
-| **Nuvio Full** | Upstream build variant | `.../NuvioFull.json` |
 
 ---
 
@@ -84,12 +88,18 @@ This repository includes fully automated GitHub Actions workflows:
 1. In **AltStore**, tap the **+** icon in the My Apps / Sources tab.
 2. Enter the source URL: `https://raw.githubusercontent.com/illuminati945/NuvioMobile-iOS/main/NuvioEnhanced.json`
 
-### 3. TrollStore (iOS 14.0 – 17.0)
-1. Download `Nuvio-v<version>-Enhanced.ipa` from the repository Releases.
-2. Open with TrollStore for permanent installation.
+### 3. LiveContainer / LiveLauncher
+1. Tap the [**Install with LiveContainer**](https://github.com/illuminati945/NuvioMobile-iOS/releases/latest) button or download the `.ipa` from the Latest Release.
+2. Open **LiveContainer** (or **LiveLauncher**).
+3. Tap the **`+`** icon (top right) and select `Nuvio-v0.4.12-Enhanced.ipa` from your **Downloads / Files** folder.
+4. Nuvio Enhanced runs seamlessly inside LiveContainer without using one of your 3 free Apple ID app slots!
 
-### 4. Sideloadly / Scarlet / Esign / Feather
-1. Download the unsigned `.ipa` from the GitHub Actions Artifacts or Releases page.
+### 4. TrollStore (iOS 14.0 – 17.0)
+1. Download `Nuvio-v<version>-Enhanced.ipa` from Releases.
+2. Tap the **1-Tap Install** button or open with TrollStore for permanent installation.
+
+### 5. Sideloadly / Scarlet / Esign / Feather
+1. Download the `.ipa` from GitHub Actions Artifacts or the Releases page.
 2. Sideload using your preferred desktop or on-device tool.
 
 ---
