@@ -3,6 +3,26 @@
 All notable Nuvio Enhanced changes are recorded here. GitHub release notes use the
 same user-facing summary so the in-app updater can display it before download.
 
+## 0.4.12 - 2026-08-24
+
+### Added
+
+- Added native iOS Files app integration (`UIFileSharingEnabled` & `LSSupportsOpeningDocumentsInPlace`), allowing users to browse, play, and export downloaded media and subtitles directly in the Files app under **On My iPhone ➔ Nuvio Enhanced** (as well as in LiveContainer / LiveLauncher shared storage).
+- Added continuous background download support on iOS with extended background execution assertions (`beginBackgroundTaskWithName`), preventing downloads from being suspended when switching apps or locking the device.
+- Added native iOS local notifications (`UNUserNotificationCenter`) with banner alerts and sounds for download completion and download failure events.
+- Added background modes (`fetch` and `processing`) to enable extended background transfers.
+
+### Fixed & Restored
+
+- Restored the **Downloads Location & Storage** settings section on iOS in Enhanced Settings.
+- Restored `DownloadsExternalFolderPlatform` on iOS with direct Files app launching (`shareddocuments://`) and active storage path display.
+- Fixed Compose Multiplatform runtime crash on iOS launch (`+[UIViewLayoutRegion marginsLayoutRegionWithCornerAdaptation:]: unrecognized selector sent to class`) via a complete Mach-O and runtime category compatibility layer.
+- Fixed SideStore and AltStore community source JSON manifests (`NuvioEnhanced.json` / `NuvioFull.json`) with direct `.ipa` release download URLs and automated CI metadata synchronization.
+
+### Release
+
+- Versioned as Nuvio Enhanced `0.4.12 (116)`.
+
 ## 0.4.11 - 2026-08-21
 
 ### Added

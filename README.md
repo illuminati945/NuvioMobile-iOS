@@ -43,6 +43,8 @@ https://raw.githubusercontent.com/illuminati945/NuvioMobile-iOS/main/NuvioEnhanc
 ## ✨ Features
 
 - 📱 **Full iOS & iPadOS Support**: Designed specifically for iPhone and iPad with native gestures and hardware acceleration.
+- ⚡ **Background Downloads & Notifications**: Continuous downloads in the background with extended execution time, Dynamic Island / Live Activities, and native local push notifications upon completion or failure.
+- 📂 **Native Files App Integration**: Full `UIFileSharing` and document support—browse, play, or export downloaded media and subtitles directly in the iOS **Files** app (`On My iPhone > Nuvio Enhanced`).
 - 📺 **Live TV & EPG**: Functional M3U playlist integration, XMLTV guide, channel switcher, and favorites.
 - 🎬 **Enhanced Video Player**: Tap-to-seek, aspect ratio toggling, audio & subtitle track preservation across quality changes.
 - 💬 **Advanced Subtitle Styling**: Custom fonts, opacity adjustment, language groups, and SDH subtitle stripping.
