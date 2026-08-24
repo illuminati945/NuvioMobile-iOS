@@ -1,0 +1,381 @@
+name: Build iOS IPA
+
+run-name: Build iOS IPA - ${{ inputs.variant || 'Enhanced' }} (${{ inputs.description || github.ref_name }})
+
+on:
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: 'Build variant (Enhanced includes custom features; Full is official)'
+        required: true
+        type: choice
+        options:
+          - enhanced
+          - full
+        default: enhanced
+
+      description:
+        description: 'Run description or release notes note'
+        required: false
+        type: string
+        default: 'Manual IPA build'
+
+      create_release:
+        description: 'Create or update a GitHub Release with the compiled IPA'
+        required: false
+        type: boolean
+        default: false
+
+      release_tag:
+        description: 'GitHub Release tag name (e.g. v0.4.11). If left blank, uses marketing version.'
+        required: false
+        type: string
+        default: ''
+
+  push:
+    tags:
+      - 'v*'
+      - '[0-9]+.[0-9]+.[0-9]+*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-ios-ipa-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-ipa:
+    name: Build Nuvio iOS (${{ inputs.variant || 'enhanced' }})
+    runs-on: macos-15-intel
+    timeout-minutes: 90
+
+    env:
+      BUILD_VARIANT: ${{ inputs.variant || 'enhanced' }}
+      # Keep JVM and Kotlin native heaps within GitHub Actions runner memory limits
+      GRADLE_OPTS: -Xmx6g -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=1536m
+      KOTLIN_DAEMON_JVMARGS: -Xmx4g
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout Repository & Submodules
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Fetch iOS Submodules (MPVKit)
+        run: git submodule update --init --recursive MPVKit
+
+      - name: Patch MPVKit Package.swift for CI
+        run: |
+          cd MPVKit
+          python3 - << 'PYEOF'
+          import re
+
+          replacements = {
+              "Libplacebo": (
+                  "https://github.com/mpvkit/libplacebo-build/releases/download/7.360.1/Libplacebo.xcframework.zip",
+                  "2fa3d54cb81f302d6f11c7b2f509af30944381c3b11ee9d35096eb4637a6e2dd"
+              ),
+              "Libavcodec": (
+                  "https://github.com/mpvkit/MPVKit/releases/download/1.0.0/Libavcodec.xcframework.zip",
+                  "136e432919a8a7b5b80155c68e9dc91b0ef3ae6623970b87bb8bd96a452543cf"
+              ),
+              "Libavdevice": (
+                  "https://github.com/mpvkit/MPVKit/releases/download/1.0.0/Libavdevice.xcframework.zip",
+                  "65713615f53352b37baffb38c5b88d88bab647d050d999bcc4684344ab636bdf"
+              ),
+              "Libavformat": (
+                  "https://github.com/mpvkit/MPVKit/releases/download/1.0.0/Libavformat.xcframework.zip",
+                  "2afb601375929640e743e7bdaa6c4a88e2b582a07e1c5f2dc95cc7f5b26a0810"
+              ),
+              "Libavfilter": (
+                  "https://github.com/mpvkit/MPVKit/releases/download/1.0.0/Libavfilter.xcframework.zip",
+                  "3e71af8633d99d365f14b88064bceafd57acb23fc64db90e55b715a9c0dca328"
+              ),
+              "Libavutil": (
+                  "https://github.com/mpvkit/MPVKit/releases/download/1.0.0/Libavutil.xcframework.zip",
+                  "5dc251c8807c501982edfb0bc9bddfee4148733142d6ebb947738c60fb3bf8d8"
+              ),
+              "Libswresample": (
+                  "https://github.com/mpvkit/MPVKit/releases/download/1.0.0/Libswresample.xcframework.zip",
+                  "d5c36acf2ff944e15706f4b7bfbf18bb1993ffc5b446c9f67f1aa79de5441f15"
+              ),
+              "Libswscale": (
+                  "https://github.com/mpvkit/MPVKit/releases/download/1.0.0/Libswscale.xcframework.zip",
+                  "4fc00de6a7a8cddcdfe0eeb73b4f919cfaf9a0fd5a442f42a43e0f56e157d7c5"
+              ),
+              "Libmpv": (
+                  "https://github.com/mpvkit/MPVKit/releases/download/1.0.0/Libmpv.xcframework.zip",
+                  "c381ceb4c1504efac12da95293e56585bbeb691634aa64e3a729f517169933ba"
+              ),
+          }
+
+          with open("Package.swift", "r") as f:
+              content = f.read()
+
+          for name, (url, checksum) in replacements.items():
+              pattern = (
+                  r'(\.binaryTarget\(\s*\n\s*name:\s*"' + re.escape(name) + r'",\s*\n)'
+                  r'\s*path:\s*"[^"]+"\s*\n'
+                  r'(\s*\))'
+              )
+              replacement = (
+                  r'\g<1>'
+                  f'            url: "{url}",\n'
+                  f'            checksum: "{checksum}"\n'
+                  r'\g<2>'
+              )
+              new_content, count = re.subn(pattern, replacement, content)
+              if count:
+                  print(f"✓ Patched {name}")
+                  content = new_content
+              else:
+                  print(f"  (skipped {name} — already url-based or not found)")
+
+          with open("Package.swift", "w") as f:
+              f.write(content)
+
+          print("\nMPVKit Package.swift patched successfully.")
+          PYEOF
+
+      - name: Select Latest Stable Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Download Nuvio Engine Apple XCFramework
+        env:
+          NUVIO_ENGINE_VERSION: 0.1.1
+        run: |
+          set -euo pipefail
+
+          ENGINE_ROOT="../nuvio-engine/platform/apple"
+          ENGINE_DEST="${ENGINE_ROOT}/NuvioEngine.xcframework"
+          ARCHIVE="${RUNNER_TEMP}/nuvio-engine-apple-${NUVIO_ENGINE_VERSION}.zip"
+          EXTRACT_DIR="${RUNNER_TEMP}/nuvio-engine-apple-${NUVIO_ENGINE_VERSION}"
+
+          rm -rf "${ENGINE_ROOT}" "${EXTRACT_DIR}" "${ARCHIVE}"
+          mkdir -p "${ENGINE_ROOT}" "${EXTRACT_DIR}"
+
+          curl \
+            --fail \
+            --location \
+            --retry 5 \
+            --retry-all-errors \
+            "https://github.com/NuvioMedia/nuvio-engine/releases/download/v${NUVIO_ENGINE_VERSION}/nuvio-engine-apple-${NUVIO_ENGINE_VERSION}.zip" \
+            --output "${ARCHIVE}"
+
+          ditto -x -k "${ARCHIVE}" "${EXTRACT_DIR}"
+
+          XCFRAMEWORK="$(find "${EXTRACT_DIR}" -type d -name NuvioEngine.xcframework -print -quit)"
+          if [[ -z "${XCFRAMEWORK}" ]]; then
+            echo "::error::NuvioEngine.xcframework was not found in the downloaded archive."
+            exit 1
+          fi
+
+          ditto "${XCFRAMEWORK}" "${ENGINE_DEST}"
+
+          for SLICE in ios-arm64 ios-arm64_x86_64-simulator; do
+            SLICE_DIR="${ENGINE_DEST}/${SLICE}"
+            test -f "${SLICE_DIR}/libCNuvioEngine.a" || {
+              echo "::error::Missing ${SLICE_DIR}/libCNuvioEngine.a"
+              exit 1
+            }
+            test -f "${SLICE_DIR}/Headers/nuvio_engine/nuvio_engine.h" || {
+              echo "::error::Missing ${SLICE_DIR}/Headers/nuvio_engine/nuvio_engine.h"
+              exit 1
+            }
+          done
+
+          echo "Nuvio Engine Apple XCFramework installed at ${ENGINE_DEST}"
+
+      - name: Generate local.properties & gradle.properties
+        run: |
+          cat << 'EOF' > local.properties
+          NUVIO_IOS_DISTRIBUTION=${{ env.BUILD_VARIANT }}
+          NUVIO_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          NUVIO_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          TRAKT_CLIENT_ID=${{ secrets.TRAKT_CLIENT_ID }}
+          TRAKT_CLIENT_SECRET=${{ secrets.TRAKT_CLIENT_SECRET }}
+          TRAKT_REDIRECT_URI=${{ secrets.TRAKT_REDIRECT_URI || 'nuvio://auth/trakt' }}
+          SIMKL_CLIENT_ID=${{ secrets.SIMKL_CLIENT_ID }}
+          SIMKL_CLIENT_SECRET=${{ secrets.SIMKL_CLIENT_SECRET }}
+          SIMKL_REDIRECT_URI=${{ secrets.SIMKL_REDIRECT_URI || 'nuvio://auth/simkl' }}
+          PREMIUMIZE_CLIENT_ID=${{ secrets.PREMIUMIZE_CLIENT_ID }}
+          PREMIUMIZE_CLIENT_SECRET=${{ secrets.PREMIUMIZE_CLIENT_SECRET }}
+          PREMIUMIZE_REDIRECT_URI=${{ secrets.PREMIUMIZE_REDIRECT_URI || 'nuvio://auth/premiumize' }}
+          TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
+          INTRODB_API_URL=${{ secrets.INTRODB_API_URL }}
+          CONTRIBUTIONS_URL=${{ secrets.CONTRIBUTIONS_URL }}
+          DONATIONS_BASE_URL=${{ secrets.DONATIONS_BASE_URL }}
+          DONATIONS_DONATE_URL=${{ secrets.DONATIONS_DONATE_URL }}
+          DIRECT_DEBRID_API_BASE_URL=${{ secrets.DIRECT_DEBRID_API_BASE_URL }}
+          EOF
+
+          cat >> gradle.properties << 'EOF'
+          org.gradle.jvmargs=-Xmx6g -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=1536m
+          org.gradle.configuration-cache=false
+          kotlin.daemon.jvmargs=-Xmx4g
+          kotlin.native.jvmArgs=-Xmx4g
+          EOF
+
+      - name: Restore iOS build caches
+        id: ios-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.konan
+            ~/Library/Caches/org.swift.swiftpm
+            iosApp/build/SourcePackages
+          key: ${{ runner.os }}-ios-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'MPVKit/Package.swift', 'iosApp/iosApp.xcodeproj/project.pbxproj') }}
+          restore-keys: |
+            ${{ runner.os }}-ios-
+
+      - name: Build iOS App via Xcode
+        run: |
+          cd iosApp
+          xcodebuild \
+            -project iosApp.xcodeproj \
+            -scheme iosApp \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Save iOS build caches
+        if: always() && steps.ios-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.konan
+            ~/Library/Caches/org.swift.swiftpm
+            iosApp/build/SourcePackages
+          key: ${{ steps.ios-cache.outputs.cache-primary-key }}
+
+      - name: Package App into .ipa
+        id: package
+        run: |
+          set -euo pipefail
+
+          PRODUCTS_DIR="iosApp/build/Build/Products/Release-iphoneos"
+          APP_DIR=$(find "${PRODUCTS_DIR}" -maxdepth 1 -type d -name '*.app' -print -quit)
+          if [[ -z "${APP_DIR}" || ! -f "${APP_DIR}/Info.plist" ]]; then
+            echo "::error::Release .app directory was not found."
+            exit 1
+          fi
+
+          APP_VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "${APP_DIR}/Info.plist")
+          BUILD_NUM=$(/usr/libexec/PlistBuddy -c "Print CFBundleVersion" "${APP_DIR}/Info.plist" 2>/dev/null || echo "1")
+          BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "${APP_DIR}/Info.plist" 2>/dev/null || echo "com.nuvio.enhanced")
+
+          if [ "${BUILD_VARIANT}" = "full" ]; then
+            SUFFIX="Full"
+          else
+            SUFFIX="Enhanced"
+          fi
+
+          IPA_NAME="Nuvio-v${APP_VERSION}-${SUFFIX}.ipa"
+          OUTPUT_DIR="${GITHUB_WORKSPACE}/build-output"
+          STAGING_DIR="${RUNNER_TEMP}/nuvio-ipa-staging"
+
+          rm -rf "${OUTPUT_DIR}" "${STAGING_DIR}"
+          mkdir -p "${OUTPUT_DIR}" "${STAGING_DIR}/Payload"
+
+          ditto "${APP_DIR}" "${STAGING_DIR}/Payload/$(basename "${APP_DIR}")"
+          (
+            cd "${STAGING_DIR}"
+            /usr/bin/zip -qry "${OUTPUT_DIR}/${IPA_NAME}" Payload
+          )
+
+          test -f "${OUTPUT_DIR}/${IPA_NAME}"
+          IPA_SIZE=$(stat -f%z "${OUTPUT_DIR}/${IPA_NAME}")
+          IPA_SHA256=$(shasum -a 256 "${OUTPUT_DIR}/${IPA_NAME}" | awk '{print $1}')
+
+          echo "ipa_path=${OUTPUT_DIR}/${IPA_NAME}" >> "$GITHUB_OUTPUT"
+          echo "ipa_name=${IPA_NAME}" >> "$GITHUB_OUTPUT"
+          echo "app_version=${APP_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "build_num=${BUILD_NUM}" >> "$GITHUB_OUTPUT"
+          echo "bundle_id=${BUNDLE_ID}" >> "$GITHUB_OUTPUT"
+          echo "ipa_size=${IPA_SIZE}" >> "$GITHUB_OUTPUT"
+          echo "ipa_sha256=${IPA_SHA256}" >> "$GITHUB_OUTPUT"
+          echo "suffix=${SUFFIX}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload iOS IPA Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: Nuvio-iOS-${{ steps.package.outputs.suffix }}-v${{ steps.package.outputs.app_version }}
+          path: ${{ steps.package.outputs.ipa_path }}
+          retention-days: 30
+
+      - name: Create or Upload to GitHub Release
+        if: inputs.create_release == true || startsWith(github.ref, 'refs/tags/')
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
+          APP_VERSION: ${{ steps.package.outputs.app_version }}
+          IPA_PATH: ${{ steps.package.outputs.ipa_path }}
+          IPA_NAME: ${{ steps.package.outputs.ipa_name }}
+          RELEASE_TITLE: ${{ inputs.release_title || steps.package.outputs.app_version }}
+        run: |
+          TAG="${RELEASE_TAG}"
+          if [[ -z "${TAG}" || "${TAG}" == "main" || "${TAG}" == "enhanced" ]]; then
+            TAG="v${APP_VERSION}"
+          fi
+
+          echo "Target Release Tag: ${TAG}"
+
+          # Check if release already exists
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            echo "Release ${TAG} exists. Uploading IPA..."
+            gh release upload "${TAG}" "${IPA_PATH}" --clobber
+          else
+            echo "Creating new release ${TAG}..."
+            gh release create "${TAG}" "${IPA_PATH}" \
+              --title "${RELEASE_TITLE}" \
+              --notes "## Nuvio Enhanced iOS v${APP_VERSION} (${{ steps.package.outputs.suffix }})
+
+Install using SideStore, AltStore, TrollStore, Scarlet, or Sideloadly.
+
+- **Bundle Identifier:** \`${{ steps.package.outputs.bundle_id }}\`
+- **Version:** \`${{ steps.package.outputs.app_version }}\` (Build \`${{ steps.package.outputs.build_num }}\`)
+- **File:** \`${{ steps.package.outputs.ipa_name }}\`
+- **SHA-256:** \`${{ steps.package.outputs.ipa_sha256 }}\`"
+          fi
+
+      - name: Generate Build Summary
+        run: |
+          cat << 'EOF' >> "$GITHUB_STEP_SUMMARY"
+          ## 📱 iOS IPA Compilation Successful!
+
+          | Property | Value |
+          |---|---|
+          | **Variant** | ${{ steps.package.outputs.suffix }} |
+          | **Version** | `${{ steps.package.outputs.app_version }}` (Build `${{ steps.package.outputs.build_num }}`) |
+          | **Bundle ID** | `${{ steps.package.outputs.bundle_id }}` |
+          | **IPA File** | `${{ steps.package.outputs.ipa_name }}` |
+          | **File Size** | $(echo "scale=2; ${{ steps.package.outputs.ipa_size }} / 1048576" | bc) MB |
+          | **SHA-256** | `${{ steps.package.outputs.ipa_sha256 }}` |
+
+          ### 📥 Installation Methods:
+          1. **SideStore / AltStore**: Download the artifact or add the repository community source URL.
+          2. **TrollStore**: Direct installation supported.
+          3. **Sideloadly / Scarlet / Esign**: Sideload the unsigned IPA directly to your iOS device.
+          EOF

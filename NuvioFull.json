@@ -1,0 +1,35 @@
+{
+  "name": "Nuvio (Full iOS)",
+  "subtitle": "Official Full variant for AltStore and SideStore.",
+  "description": "Community update channel for the Nuvio Full iOS variant.",
+  "website": "https://github.com",
+  "iconURL": "https://raw.githubusercontent.com/AKRusso/NuvioMobile-Enhanced/enhanced/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/app-icon-1024.png",
+  "tintColor": "7B2FF7",
+  "featuredApps": [
+    "com.nuvio.enhanced"
+  ],
+  "news": [],
+  "apps": [
+    {
+      "name": "Nuvio Full",
+      "bundleIdentifier": "com.nuvio.enhanced",
+      "developerName": "Nuvio Community",
+      "subtitle": "Watch movies, TV shows & anime anywhere",
+      "localizedDescription": "Full build of Nuvio Mobile for iOS and iPadOS.",
+      "iconURL": "https://raw.githubusercontent.com/AKRusso/NuvioMobile-Enhanced/enhanced/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/app-icon-1024.png",
+      "tintColor": "7B2FF7",
+      "category": "entertainment",
+      "versions": [
+        {
+          "version": "0.4.11",
+          "buildVersion": "115",
+          "date": "2026-08-24T11:00:00Z",
+          "localizedDescription": "# 🚀 Nuvio Full iOS v0.4.11\n\nFull official build for iOS and iPadOS with sideload support.",
+          "downloadURL": "https://github.com",
+          "size": 65000000,
+          "minOSVersion": "16.0"
+        }
+      ]
+    }
+  ]
+}

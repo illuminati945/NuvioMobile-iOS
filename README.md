@@ -1,199 +1,124 @@
 <div align="center">
 
-  <img src="https://github.com/tapframe/NuvioTV/blob/main/assets/brand/app_logo_wordmark.png" alt="NuvioMobile Enhanced" width="320" />
+  <img src="https://github.com/tapframe/NuvioTV/blob/main/assets/brand/app_logo_wordmark.png" alt="Nuvio Enhanced iOS" width="340" />
 
-  <h1>NuvioMobile Enhanced</h1>
+  <h1>Nuvio Enhanced for iOS & iPadOS</h1>
 
-  <p><strong>An independent continuation of NuvioMobile, maintained by AKRusso.</strong></p>
+  <p><strong>Unofficial iOS fork of Nuvio Enhanced with automated CI/CD IPA compilation and SideStore / AltStore community sources.</strong></p>
 
   <p>
-    This fork keeps Nuvio up to date while adding improvements to the user experience,
-    playback, navigation, tracking, and community support.
+    <a href="https://github.com"><img src="https://img.shields.io/badge/Platform-iOS%20%7C%20iPadOS-blue?style=for-the-badge&logo=apple" alt="iOS & iPadOS" /></a>
+    <a href="https://github.com"><img src="https://img.shields.io/badge/SideStore-Compatible-7B2FF7?style=for-the-badge" alt="SideStore Compatible" /></a>
+    <a href="https://github.com"><img src="https://img.shields.io/badge/AltStore-Compatible-2496ED?style=for-the-badge" alt="AltStore Compatible" /></a>
+    <a href="https://github.com"><img src="https://img.shields.io/badge/TrollStore-Ready-orange?style=for-the-badge" alt="TrollStore Ready" /></a>
   </p>
 
   <p>
-    <a href="https://github.com/AKRusso/NuvioMobile-Enhanced/releases/latest"><img src="https://img.shields.io/github/v/release/AKRusso/NuvioMobile-Enhanced?style=for-the-badge&label=Latest%20Release" alt="Latest release" /></a>
-    <a href="https://github.com/AKRusso/NuvioMobile-Enhanced/releases"><img src="https://img.shields.io/github/downloads/AKRusso/NuvioMobile-Enhanced/total?style=for-the-badge&label=Downloads" alt="Downloads" /></a>
-    <a href="https://github.com/AKRusso/NuvioMobile-Enhanced/actions/workflows/android-release.yml"><img src="https://img.shields.io/github/actions/workflow/status/AKRusso/NuvioMobile-Enhanced/android-release.yml?style=for-the-badge&label=Android%20Build" alt="Android build status" /></a>
-    <a href="https://github.com/AKRusso/NuvioMobile-Enhanced/blob/enhanced/LICENSE"><img src="https://img.shields.io/github/license/AKRusso/NuvioMobile-Enhanced?style=for-the-badge" alt="License" /></a>
-  </p>
-
-  <p>
-    <a href="#download">Download</a> |
-    <a href="#what-i-maintain">What I maintain</a> |
-    <a href="#features">Features</a> |
-    <a href="#contributing">Contributing</a> |
-    <a href="#credits-and-attribution">Credits</a>
+    <a href="#-quick-install-sidestore--altstore">SideStore Source</a> •
+    <a href="#-features">Features</a> •
+    <a href="#-automated-github-actions-builds">Automated Builds</a> •
+    <a href="#-sideloading-instructions">Installation</a> •
+    <a href="IOS_SETUP.md">Detailed Setup Guide</a>
   </p>
 
 </div>
 
-## Current Status
+---
 
-This repository is maintained by **AKRusso** as an independent continuation of
-NuvioMobile Enhanced. The goal is to keep the fork aligned with the original
-project, fix bugs, improve Android and iOS, and provide easy-to-install release
-builds.
+## ⚡ Quick Install: SideStore & AltStore
 
-| Track | Version |
-| --- | --- |
-| Nuvio Enhanced | `0.4.8 (112)` |
-| Official NuvioMobile base | `0.4.4` |
-| Fork main branch | [`enhanced`](https://github.com/AKRusso/NuvioMobile-Enhanced/tree/enhanced) |
-| Maintainer | [AKRusso](https://github.com/AKRusso) |
+Add this repository as a community source to your sideload manager for automatic updates:
 
-The Enhanced version is kept separate from the official version so it is clear
-which work comes from the original Nuvio project and which work belongs to this
-fork.
+```text
+https://raw.githubusercontent.com/YOUR_GITHUB_USER/YOUR_REPO/main/NuvioEnhanced.json
+```
 
-## Download
+| Source Variant | Description | Community Source URL |
+|---|---|---|
+| **Nuvio Enhanced** *(Recommended)* | Full features, Live TV, custom player options & tweaks | `.../NuvioEnhanced.json` |
+| **Nuvio Full** | Upstream build variant | `.../NuvioFull.json` |
 
-### Android
+---
 
-Always download from the official fork release:
+## ✨ Features
 
-**[Download the latest Nuvio Enhanced release](https://github.com/AKRusso/NuvioMobile-Enhanced/releases/latest)**
+- 📱 **Full iOS & iPadOS Support**: Designed specifically for iPhone and iPad with native gestures and hardware acceleration.
+- 📺 **Live TV & EPG**: Functional M3U playlist integration, XMLTV guide, channel switcher, and favorites.
+- 🎬 **Enhanced Video Player**: Tap-to-seek, aspect ratio toggling, audio & subtitle track preservation across quality changes.
+- 💬 **Advanced Subtitle Styling**: Custom fonts, opacity adjustment, language groups, and SDH subtitle stripping.
+- 🤖 **AI Content Assistant**: Grounded content recommendations and smart synopsis.
+- 📅 **Release Radar & Library Calendar**: Built-in upcoming release calendar and series tracking.
+- 🔄 **Cloud & Tracking Sync**: Seamless Trakt and Simkl synchronization with QR/device-code authentication.
+- 🚀 **Zero-Config Cloud CI**: Automated compilation via GitHub Actions without needing a Mac or local Xcode.
 
-For most Android phones, choose:
+---
 
-**[ARM64-v8a - recommended](https://github.com/AKRusso/NuvioMobile-Enhanced/releases/latest/download/androidApp-full-arm64-v8a-release.apk)**
+## 🛠️ Automated GitHub Actions Builds
 
-If you are unsure which architecture your device uses, download the universal APK:
+This repository includes fully automated GitHub Actions workflows:
 
-**[Universal APK - easiest option](https://github.com/AKRusso/NuvioMobile-Enhanced/releases/latest/download/androidApp-full-universal-release.apk)**
+1. **`Build iOS IPA` (`.github/workflows/build-ipa.yml`)**:
+   - Compiles `.ipa` on Apple macOS runners on demand.
+   - Run manually from the **Actions** tab with choice of `Enhanced` or `Full` variant.
+   - Outputs ready-to-sideload `.ipa` artifact with SHA-256 hash.
 
-Other architectures are available on the release page:
+2. **`Create iOS Release` (`.github/workflows/ios-release.yml`)**:
+   - Automatically builds IPAs and publishes GitHub Releases.
 
-- `armeabi-v7a`: older 32-bit Android devices.
-- `x86_64`: 64-bit Intel emulators or compatible devices.
-- `x86`: 32-bit Intel emulators or compatible devices.
+3. **`Update AltStore & SideStore Sources` (`.github/workflows/update-altstore.yml`)**:
+   - Automatically parses new releases, extracts IPA metadata, and updates `NuvioEnhanced.json` / `NuvioFull.json` so SideStore users get instant updates.
 
-Release APKs are built by GitHub Actions, use the update-compatible certificate
-from previous Enhanced builds, and include SHA-256 hashes in the release notes.
+---
 
-### iOS and iPadOS
+## 📥 Sideloading Instructions
 
-Future published releases build the Full iOS variant and attach
-`Nuvio-Enhanced-v<version>-Full-unsigned.ipa` to the same GitHub release as the
-Android APKs. The Full variant retains sideload-only functionality such as P2P,
-plugins, and in-app trailers.
+### 1. SideStore (Recommended)
+1. Open **SideStore** on your iOS device.
+2. Go to **Sources** tab -> tap **+** in top right.
+3. Paste: `https://raw.githubusercontent.com/YOUR_GITHUB_USER/YOUR_REPO/main/NuvioEnhanced.json`
+4. Tap **Add** and install **Nuvio Enhanced**.
 
-The IPA is intentionally unsigned. Install it with AltStore or SideStore, which
-signs it using your own Apple account. It cannot be installed by opening the
-file directly, and it is not intended for the App Store.
+### 2. AltStore
+1. In **AltStore**, tap the **+** icon in the My Apps / Sources tab.
+2. Enter the source URL: `https://raw.githubusercontent.com/YOUR_GITHUB_USER/YOUR_REPO/main/NuvioEnhanced.json`
 
-## What I Maintain
+### 3. TrollStore (iOS 14.0 – 17.0)
+1. Download `Nuvio-v<version>-Enhanced.ipa` from the repository Releases.
+2. Open with TrollStore for permanent installation.
 
-- Keeping this fork aligned with stable NuvioMobile releases.
-- Fixing bugs and regressions found on Android and iOS.
-- Building and publishing signed Android APKs and sideload-ready iOS IPAs through GitHub Actions.
-- Improving navigation, playback, library, Live TV, and tracking across both platforms.
-- Maintaining clear documentation, changelogs, and release notes.
-- Supporting the community through Ko-fi without storing private payment data.
+### 4. Sideloadly / Scarlet / Esign / Feather
+1. Download the unsigned `.ipa` from the GitHub Actions Artifacts or Releases page.
+2. Sideload using your preferred desktop or on-device tool.
 
-## Features
+---
 
-| Area | Enhanced improvements |
-| --- | --- |
-| Playback | Android libmpv playback, tap-to-seek, progress synchronization, and stability improvements. |
-| Live TV | M3U navigation, favorites, channel switching, filters, XMLTV EPG, and recent channels. |
-| Tracking | Updated Trakt and Simkl authentication and synchronization flows. |
-| Library | Release calendar, clearer status handling, and refined navigation. |
-| AI assistant | Gemini, OpenRouter, Cerebras, and Groq integrations with formatted responses. |
-| Community | Supporters, contributors, Ko-fi donations, and approved supporter avatars. |
-| UX | More consistent visuals, smoother transitions, and less flicker on dynamic screens. |
+## 📖 Building Locally
 
-## Roadmap
-
-- Continue tracking official NuvioMobile releases.
-- Fix community-reported issues and improve Android compatibility.
-- Keep releases signed, verifiable, and easy to install.
-- Improve technical documentation and contribution workflows.
-
-Features may change as upstream evolves and community feedback arrives. Specific
-changes are recorded in [`CHANGELOG.md`](CHANGELOG.md) and each release's notes.
-
-## Support And Feedback
-
-- [Report a bug](https://github.com/AKRusso/NuvioMobile-Enhanced/issues/new/choose)
-- [View open issues](https://github.com/AKRusso/NuvioMobile-Enhanced/issues)
-- [View builds and workflows](https://github.com/AKRusso/NuvioMobile-Enhanced/actions)
-- [Support development on Ko-fi](https://ko-fi.com/nuvioenhanced)
-- [Join the community Discord](https://discord.gg/at8xffxuRU)
-
-When reporting an issue, include the Enhanced version, device architecture,
-Android version, reproduction steps, and relevant logs without personal data.
-
-## Build From Source
+Requirements:
+- macOS with Xcode 15 or 16 installed
+- JDK 17 (`brew install openjdk@17`)
 
 ```bash
-git clone https://github.com/AKRusso/NuvioMobile-Enhanced.git
-cd NuvioMobile-Enhanced
-git checkout enhanced
-./gradlew :androidApp:assembleFullDebug
+# Clone with submodules
+git clone --recurse-submodules https://github.com/YOUR_GITHUB_USER/YOUR_REPO.git
+cd YOUR_REPO
+
+# Fetch Nuvio Engine
+mkdir -p ../nuvio-engine/platform/apple
+curl -L "https://github.com/NuvioMedia/nuvio-engine/releases/download/v0.1.1/nuvio-engine-apple-0.1.1.zip" -o /tmp/engine.zip
+ditto -x -k /tmp/engine.zip /tmp/engine
+ditto /tmp/engine/NuvioEngine.xcframework ../nuvio-engine/platform/apple/NuvioEngine.xcframework
+
+# Build Xcode project
+cd iosApp
+xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Release -destination 'generic/platform=iOS' build
 ```
 
-On Windows:
+---
 
-```powershell
-git clone https://github.com/AKRusso/NuvioMobile-Enhanced.git
-cd NuvioMobile-Enhanced
-git checkout enhanced
-.\gradlew.bat :androidApp:assembleFullDebug
-```
+## 🤝 Attribution & Credits
 
-To run the main validation tasks:
-
-```powershell
-.\gradlew.bat allTests :androidApp:lintFullDebug
-```
-
-Credentials, tokens, and private configuration must stay in `local.properties` or
-GitHub Actions secrets. Never commit them to Git.
-
-## Contributing
-
-Pull requests and issues are welcome. Before contributing:
-
-1. Confirm that the change belongs in Enhanced rather than the original upstream project.
-2. Keep changes focused and explain the expected behavior.
-3. Run the relevant tests and lint checks.
-4. Update the changelog when the change affects users.
-5. Never include tokens, passwords, credentials, or private files.
-
-For larger changes, open an issue first so the direction can be discussed.
-
-## Credits And Attribution
-
-This is an independent community fork. **NuvioMobile Enhanced is not the original
-project and does not speak on behalf of the upstream maintainers.**
-
-- Fork maintainer: [AKRusso](https://github.com/AKRusso)
-- Original project: [NuvioMedia/NuvioMobile](https://github.com/NuvioMedia/NuvioMobile)
-- Upstream organization: [NuvioMedia](https://github.com/NuvioMedia)
-- Brand asset used here: [tapframe/NuvioTV](https://github.com/tapframe/NuvioTV)
-
-Fork-specific changes are documented in the Git history, changelog, and release
-notes. Original code remains subject to its license and attribution requirements.
-
-## Legal And DMCA
-
-NuvioMobile Enhanced is a client-side interface for browsing metadata and playing
-media through user-installed extensions and/or user-provided sources. Use it only
-with content you own or are authorized to access.
-
-The project does not host, store, or distribute media content and is not affiliated
-with third-party extensions, catalogs, sources, or content providers.
-
-- [Legal policy and disclaimer](https://nuvioapp.space/legal)
-- [GPL-3.0 license](LICENSE)
-
-## Star History
-
-<a href="https://www.star-history.com/#AKRusso/NuvioMobile-Enhanced&type=date&legend=top-left">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=AKRusso/NuvioMobile-Enhanced&type=date&theme=dark&legend=top-left" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=AKRusso/NuvioMobile-Enhanced&type=date&legend=top-left" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=AKRusso/NuvioMobile-Enhanced&type=date&legend=top-left" />
-  </picture>
-</a>
+- Upstream NuvioMobile by [NuvioMedia](https://github.com/NuvioMedia) & [tapframe](https://github.com/tapframe)
+- Enhanced features based on [AKRusso](https://github.com/AKRusso/NuvioMobile-Enhanced)
+- iOS build & SideStore configuration inspiration from [luqmanfadlli](https://github.com/luqmanfadlli/NuvioMobile-iOS)
+- [MPVKit](https://github.com/mpvkit/MPVKit) & [libmpv](https://mpv.io)
