@@ -26,7 +26,7 @@
           "date": "2026-08-24T22:15:00Z",
           "localizedDescription": "# 🚀 Nuvio Full iOS v0.4.12\n\nFull official build for iOS and iPadOS with sideload support, background downloads, notification support, and Files app access.",
           "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.12/Nuvio-v0.4.12-Full.ipa",
-          "size": 61283322,
+          "size": 61296443,
           "minOSVersion": "16.0"
         }
       ]
