@@ -25,8 +25,8 @@
           "buildVersion": "115",
           "date": "2026-08-24T11:00:00Z",
           "localizedDescription": "# 🚀 Nuvio Enhanced iOS v0.4.11\n\n- Latest upstream enhancements & fixes\n- SideStore and AltStore community source support\n- Automated GitHub Actions compilation\n- Live TV and M3U EPG integration\n- Subtitle styling and language grouping\n- Performance and memory stability improvements",
-          "downloadURL": "https://github.com",
-          "size": 65000000,
+          "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.11/Nuvio-v0.4.11-Enhanced.ipa",
+          "size": 61274439,
           "minOSVersion": "16.0"
         }
       ]

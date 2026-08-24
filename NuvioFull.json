@@ -25,8 +25,8 @@
           "buildVersion": "115",
           "date": "2026-08-24T11:00:00Z",
           "localizedDescription": "# 🚀 Nuvio Full iOS v0.4.11\n\nFull official build for iOS and iPadOS with sideload support.",
-          "downloadURL": "https://github.com",
-          "size": 65000000,
+          "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.11/Nuvio-v0.4.11-Full.ipa",
+          "size": 61274439,
           "minOSVersion": "16.0"
         }
       ]

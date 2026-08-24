@@ -286,6 +286,60 @@ jobs:
               --notes "Release of Nuvio Enhanced iOS ${TAG}"
           fi
 
+      - name: Update SideStore / AltStore Community Source JSON
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.package.outputs.version }}
+          IPA_NAME: ${{ env.IPA_NAME }}
+          BUILD_SUFFIX: ${{ env.BUILD_SUFFIX }}
+        run: |
+          python3 - << 'PYEOF'
+          import json, os, datetime
+
+          version = os.environ.get('VERSION', '0.4.11')
+          ipa_name = os.environ.get('IPA_NAME', 'Nuvio-v0.4.11-Enhanced.ipa')
+          suffix = os.environ.get('BUILD_SUFFIX', 'Enhanced')
+          repo = os.environ.get('GITHUB_REPOSITORY', 'illuminati945/NuvioMobile-iOS')
+
+          json_file = f"Nuvio{suffix}.json"
+          if not os.path.exists(json_file):
+              json_file = "NuvioEnhanced.json"
+
+          ipa_path = f"iosApp/build/Build/Products/Release-iphoneos/{ipa_name}"
+          size = os.path.getsize(ipa_path) if os.path.exists(ipa_path) else 61274439
+
+          download_url = f"https://github.com/{repo}/releases/download/v{version}/{ipa_name}"
+          now_iso = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+          with open(json_file, 'r', encoding='utf-8') as f:
+              data = json.load(f)
+
+          if data.get("apps") and len(data["apps"]) > 0:
+              app = data["apps"][0]
+              if not app.get("versions"):
+                  app["versions"] = []
+              ver_entry = {
+                  "version": version,
+                  "buildVersion": "115",
+                  "date": now_iso,
+                  "localizedDescription": f"# 🚀 Nuvio {suffix} iOS v{version}\n\n- Latest upstream enhancements & fixes\n- SideStore and AltStore community source support\n- Automated GitHub Actions compilation\n- Live TV and M3U EPG integration\n- Subtitle styling and language grouping\n- Performance and memory stability improvements",
+                  "downloadURL": download_url,
+                  "size": size,
+                  "minOSVersion": "16.0"
+              }
+              app["versions"] = [ver_entry]
+
+          with open(json_file, 'w', encoding='utf-8') as f:
+              json.dump(data, f, indent=2)
+
+          print(f"Updated {json_file} with downloadURL: {download_url} ({size} bytes)")
+          PYEOF
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add NuvioEnhanced.json NuvioFull.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update SideStore source metadata for v${VERSION} [skip ci]" && git push)
+
       - name: Send Discord Release Notification
         if: always() && steps.package.outcome == 'success'
         env:
