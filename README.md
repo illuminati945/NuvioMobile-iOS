@@ -30,7 +30,7 @@
 Add this repository as a community source to your sideload manager for automatic updates:
 
 ```text
-https://raw.githubusercontent.com/YOUR_GITHUB_USER/YOUR_REPO/main/NuvioEnhanced.json
+https://raw.githubusercontent.com/illuminati945/NuvioMobile-iOS/main/NuvioEnhanced.json
 ```
 
 | Source Variant | Description | Community Source URL |
@@ -75,12 +75,12 @@ This repository includes fully automated GitHub Actions workflows:
 ### 1. SideStore (Recommended)
 1. Open **SideStore** on your iOS device.
 2. Go to **Sources** tab -> tap **+** in top right.
-3. Paste: `https://raw.githubusercontent.com/YOUR_GITHUB_USER/YOUR_REPO/main/NuvioEnhanced.json`
+3. Paste: `https://raw.githubusercontent.com/illuminati945/NuvioMobile-iOS/main/NuvioEnhanced.json`
 4. Tap **Add** and install **Nuvio Enhanced**.
 
 ### 2. AltStore
 1. In **AltStore**, tap the **+** icon in the My Apps / Sources tab.
-2. Enter the source URL: `https://raw.githubusercontent.com/YOUR_GITHUB_USER/YOUR_REPO/main/NuvioEnhanced.json`
+2. Enter the source URL: `https://raw.githubusercontent.com/illuminati945/NuvioMobile-iOS/main/NuvioEnhanced.json`
 
 ### 3. TrollStore (iOS 14.0 – 17.0)
 1. Download `Nuvio-v<version>-Enhanced.ipa` from the repository Releases.
@@ -100,7 +100,7 @@ Requirements:
 
 ```bash
 # Clone with submodules
-git clone --recurse-submodules https://github.com/YOUR_GITHUB_USER/YOUR_REPO.git
+git clone --recurse-submodules https://github.com/illuminati945/NuvioMobile-iOS.git
 cd YOUR_REPO
 
 # Fetch Nuvio Engine

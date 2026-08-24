@@ -16,7 +16,7 @@ SideStore allows on-device wireless app refreshing using WireGuard without needi
 3. Tap the **+** (Add) button in the top right corner.
 4. Paste the following URL:
    ```text
-   https://raw.githubusercontent.com/YOUR_GITHUB_USER/YOUR_REPO/main/NuvioEnhanced.json
+   https://raw.githubusercontent.com/illuminati945/NuvioMobile-iOS/main/NuvioEnhanced.json
    ```
 5. Tap **Add**. You will now see **Nuvio Enhanced** in your Sources list ready for one-tap install and refresh.
 
@@ -26,7 +26,7 @@ SideStore allows on-device wireless app refreshing using WireGuard without needi
 3. Tap the **+** button.
 4. Enter the source URL:
    ```text
-   https://raw.githubusercontent.com/YOUR_GITHUB_USER/YOUR_REPO/main/NuvioEnhanced.json
+   https://raw.githubusercontent.com/illuminati945/NuvioMobile-iOS/main/NuvioEnhanced.json
    ```
 
 ---
@@ -43,7 +43,7 @@ SideStore allows on-device wireless app refreshing using WireGuard without needi
 | **LiveContainer** | Unlimited apps | No | JIT & Multi-app container |
 
 ### 🚀 Direct IPA Download & Install
-1. Go to the [Releases](https://github.com/YOUR_GITHUB_USER/YOUR_REPO/releases) page of this repository.
+1. Go to the [Releases](https://github.com/illuminati945/NuvioMobile-iOS/releases) page of this repository.
 2. Download the latest `Nuvio-v<version>-Enhanced.ipa`.
 3. Open with **TrollStore**, **SideStore**, **AltStore**, or **Sideloadly** to install.
 

@@ -2,7 +2,7 @@
   "name": "Nuvio Enhanced (iOS)",
   "subtitle": "Enhanced Nuvio builds for AltStore and SideStore.",
   "description": "Community update channel for the Nuvio Enhanced iOS variant with experimental features, QoL improvements, Live TV, and custom player capabilities.",
-  "website": "https://github.com",
+  "website": "https://github.com/illuminati945/NuvioMobile-iOS",
   "iconURL": "https://raw.githubusercontent.com/AKRusso/NuvioMobile-Enhanced/enhanced/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/app-icon-1024.png",
   "tintColor": "7B2FF7",
   "featuredApps": [
