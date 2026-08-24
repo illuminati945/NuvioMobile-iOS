@@ -522,6 +522,7 @@ kotlin {
                     "-framework", "Security",
                     "-framework", "SystemConfiguration",
                     "-framework", "CoreFoundation",
+                    "-framework", "UIKit",
                 )
             }
         }
