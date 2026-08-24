@@ -175,7 +175,7 @@ jobs:
           echo "Nuvio Engine Apple XCFramework installed at ${ENGINE_DEST}"
           find "${ENGINE_DEST}" -maxdepth 4 -type f -print
 
-      - name: Generate local.properties
+      - name: Generate local.properties & gradle.properties
         run: |
           cat << 'EOF' > local.properties
           NUVIO_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
@@ -196,6 +196,12 @@ jobs:
           DONATIONS_DONATE_URL=${{ secrets.DONATIONS_DONATE_URL }}
           DIRECT_DEBRID_API_BASE_URL=${{ secrets.DIRECT_DEBRID_API_BASE_URL }}
           NUVIO_IOS_DISTRIBUTION=full
+          EOF
+
+          cat >> gradle.properties << 'EOF'
+          kotlin.native.cacheKind=none
+          kotlin.native.cacheKind.iosArm64=none
+          kotlin.native.cacheKind.iosSimulatorArm64=none
           EOF
 
       - name: Restore iOS build caches
@@ -283,3 +289,50 @@ jobs:
               --title "Nuvio Enhanced iOS ${TAG}" \
               --notes "Release of Nuvio Enhanced iOS ${TAG}"
           fi
+
+      - name: Send Discord Release Notification
+        if: always() && steps.package.outcome == 'success'
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          VERSION: ${{ steps.package.outputs.version }}
+          IPA_NAME: ${{ env.IPA_NAME }}
+        run: |
+          python3 - << 'PYEOF'
+          import urllib.request, json, os
+
+          webhook_url = os.environ.get('DISCORD_WEBHOOK', '')
+          if not webhook_url:
+              exit(0)
+
+          version = os.environ.get('VERSION', '0.4.11')
+          ipa_name = os.environ.get('IPA_NAME', 'Nuvio.ipa')
+          repo = os.environ.get('GITHUB_REPOSITORY', 'illuminati945/NuvioMobile-iOS')
+
+          payload = {
+              'username': 'Nuvio iOS Release',
+              'embeds': [{
+                  'title': f'🎉 Nuvio Enhanced iOS v{version} Released!',
+                  'description': f'A new iOS IPA package has been compiled and published to GitHub Releases.',
+                  'color': 3066993,
+                  'fields': [
+                      {'name': '📦 Package', 'value': f'`{ipa_name}`', 'inline': True},
+                      {'name': '🏷️ Release Tag', 'value': f'`v{version}`', 'inline': True},
+                      {'name': '⬇️ Download Link', 'value': f'[Download IPA from Releases](https://github.com/{repo}/releases/tag/v{version})', 'inline': False},
+                      {'name': '📲 SideStore Source', 'value': f'`https://raw.githubusercontent.com/{repo}/main/NuvioEnhanced.json`', 'inline': False}
+                  ],
+                  'footer': {'text': 'Nuvio Enhanced iOS Auto-Builder'}
+              }]
+          }
+
+          req = urllib.request.Request(
+              webhook_url,
+              data=json.dumps(payload).encode('utf-8'),
+              headers={'Content-Type': 'application/json', 'User-Agent': 'DiscordBot'},
+              method='POST'
+          )
+          try:
+              urllib.request.urlopen(req)
+              print('Discord notification sent successfully!')
+          except Exception as e:
+              print('Discord notification error:', e)
+          PYEOF
