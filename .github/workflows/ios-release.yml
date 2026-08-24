@@ -4,20 +4,19 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'Release Mode'
+        description: Build a full or enhanced ipa
         required: true
         type: choice
         options:
-          - publish
-          - draft
-          - dry-run
-        default: publish
+          - full
+          - enhanced
+        default: enhanced
 
-      custom_tag:
-        description: 'Custom tag name (optional, defaults to marketing version)'
+      description:
+        description: Run description
         required: false
         type: string
-        default: ''
+        default: 'Automated Release'
 
   push:
     tags:
@@ -26,34 +25,20 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: ios-release-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
   build-ipa:
-    name: Build iOS IPA (Enhanced Full)
-    if: inputs.mode != 'dry-run'
+    name: Build Nuvio for iOS and iPadOS
     runs-on: macos-14
-    timeout-minutes: 60
-
-    env:
-      NUVIO_IOS_DISTRIBUTION: full
-      GRADLE_OPTS: -Xmx8g -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=2048m
-      KOTLIN_DAEMON_JVMARGS: -Xmx6g
-      GH_TOKEN: ${{ github.token }}
-
     steps:
       - name: Checkout Repository & Submodules
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           lfs: true
 
-      - name: Fetch MPVKit Submodule
+      - name: Fetch iOS Specific Submodule
         run: git submodule update --init --recursive MPVKit
 
-      - name: Patch MPVKit Package.swift for CI
+      - name: Patch MPVKit Package.swift for CI (replace local path targets with remote URLs)
         run: |
           cd MPVKit
           python3 - << 'PYEOF'
@@ -102,6 +87,7 @@ jobs:
               content = f.read()
 
           for name, (url, checksum) in replacements.items():
+              # Match binaryTarget with path: for this exact name
               pattern = (
                   r'(\.binaryTarget\(\s*\n\s*name:\s*"' + re.escape(name) + r'",\s*\n)'
                   r'\s*path:\s*"[^"]+"\s*\n'
@@ -117,9 +103,13 @@ jobs:
               if count:
                   print(f"✓ Patched {name}")
                   content = new_content
+              else:
+                  print(f"  (skipped {name} — already url-based or not found)")
 
           with open("Package.swift", "w") as f:
               f.write(content)
+
+          print("\nDone.")
           PYEOF
 
       - name: Select Latest Stable Xcode
@@ -127,14 +117,14 @@ jobs:
         with:
           xcode-version: latest-stable
 
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
 
       - name: Download Nuvio Engine Apple XCFramework
         env:
@@ -163,37 +153,65 @@ jobs:
           XCFRAMEWORK="$(find "${EXTRACT_DIR}" -type d -name NuvioEngine.xcframework -print -quit)"
           if [[ -z "${XCFRAMEWORK}" ]]; then
             echo "::error::NuvioEngine.xcframework was not found in the downloaded archive."
+            find "${EXTRACT_DIR}" -maxdepth 4 -print
             exit 1
           fi
 
           ditto "${XCFRAMEWORK}" "${ENGINE_DEST}"
 
-      - name: Generate local.properties & gradle.properties
+          for SLICE in ios-arm64 ios-arm64_x86_64-simulator; do
+            SLICE_DIR="${ENGINE_DEST}/${SLICE}"
+
+            test -f "${SLICE_DIR}/libCNuvioEngine.a" || {
+              echo "::error::Missing ${SLICE_DIR}/libCNuvioEngine.a"
+              exit 1
+            }
+
+            test -f "${SLICE_DIR}/Headers/nuvio_engine/nuvio_engine.h" || {
+              echo "::error::Missing ${SLICE_DIR}/Headers/nuvio_engine/nuvio_engine.h"
+              exit 1
+            }
+          done
+
+          echo "Nuvio Engine Apple XCFramework installed at ${ENGINE_DEST}"
+          find "${ENGINE_DEST}" -maxdepth 4 -type f -print
+
+      - name: Generate local.properties
         run: |
           cat << 'EOF' > local.properties
-          NUVIO_IOS_DISTRIBUTION=full
           NUVIO_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
           NUVIO_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
           TRAKT_CLIENT_ID=${{ secrets.TRAKT_CLIENT_ID }}
           TRAKT_CLIENT_SECRET=${{ secrets.TRAKT_CLIENT_SECRET }}
-          TRAKT_REDIRECT_URI=${{ secrets.TRAKT_REDIRECT_URI || 'nuvio://auth/trakt' }}
+          TRAKT_REDIRECT_URI=${{ secrets.TRAKT_REDIRECT_URI }}
           SIMKL_CLIENT_ID=${{ secrets.SIMKL_CLIENT_ID }}
           SIMKL_CLIENT_SECRET=${{ secrets.SIMKL_CLIENT_SECRET }}
-          SIMKL_REDIRECT_URI=${{ secrets.SIMKL_REDIRECT_URI || 'nuvio://auth/simkl' }}
+          SIMKL_REDIRECT_URI=${{ secrets.SIMKL_REDIRECT_URI }}
+          PREMIUMIZE_CLIENT_ID=${{ secrets.PREMIUMIZE_CLIENT_ID }}
+          PREMIUMIZE_CLIENT_SECRET=${{ secrets.PREMIUMIZE_CLIENT_SECRET }}
+          PREMIUMIZE_REDIRECT_URI=${{ secrets.PREMIUMIZE_REDIRECT_URI }}
           TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
+          INTRODB_API_URL=${{ secrets.INTRODB_API_URL }}
+          CONTRIBUTIONS_URL=${{ secrets.CONTRIBUTIONS_URL }}
+          DONATIONS_BASE_URL=${{ secrets.DONATIONS_BASE_URL }}
+          DONATIONS_DONATE_URL=${{ secrets.DONATIONS_DONATE_URL }}
+          DIRECT_DEBRID_API_BASE_URL=${{ secrets.DIRECT_DEBRID_API_BASE_URL }}
+          NUVIO_IOS_DISTRIBUTION=full
           EOF
 
-          cat >> gradle.properties << 'EOF'
-          org.gradle.jvmargs=-Xmx8g -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=2048m
-          org.gradle.configuration-cache=false
-          kotlin.daemon.jvmargs=-Xmx6g
-          kotlin.native.jvmArgs=-Xmx6g
-          EOF
-
-      - name: Compile Kotlin Multiplatform Framework
-        run: |
-          chmod +x ./gradlew
-          ./gradlew :composeApp:assembleComposeAppReleaseFrameworkIosArm64 --stacktrace
+      - name: Restore iOS build caches
+        id: ios-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.konan
+            ~/Library/Caches/org.swift.swiftpm
+            iosApp/build/SourcePackages
+          key: ${{ runner.os }}-ios-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'MPVKit/Package.swift', 'iosApp/iosApp.xcodeproj/project.pbxproj') }}
+          restore-keys: |
+            ${{ runner.os }}-ios-
 
       - name: Build iOS App via Xcode
         run: |
@@ -210,132 +228,64 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             build
 
+      - name: Save iOS build caches
+        if: always() && steps.ios-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.konan
+            ~/Library/Caches/org.swift.swiftpm
+            iosApp/build/SourcePackages
+          key: ${{ steps.ios-cache.outputs.cache-primary-key }}
+
+      - name: Set artifact suffix
+        run: |
+          if [ "${{ inputs.mode }}" = "full" ]; then
+            echo "BUILD_SUFFIX=Full" >> $GITHUB_ENV
+          else
+            echo "BUILD_SUFFIX=Enhanced" >> $GITHUB_ENV
+          fi
+
       - name: Package App into .ipa
         id: package
         run: |
-          set -euo pipefail
+          cd iosApp/build/Build/Products/Release-iphoneos
+          APP_DIR=$(ls -d *.app | head -n 1)
+          APP_VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$APP_DIR/Info.plist")
+          mkdir Payload
+          mv "$APP_DIR" Payload/
+          IPA_NAME="Nuvio-v${APP_VERSION}-${BUILD_SUFFIX}.ipa"
+          zip -q -r "$IPA_NAME" Payload
+          echo "IPA_NAME=$IPA_NAME" >> $GITHUB_ENV
+          echo "ipa_path=iosApp/build/Build/Products/Release-iphoneos/${IPA_NAME}" >> $GITHUB_OUTPUT
+          echo "version=${APP_VERSION}" >> $GITHUB_OUTPUT
 
-          PRODUCTS_DIR="iosApp/build/Build/Products/Release-iphoneos"
-          APP_DIR=$(find "${PRODUCTS_DIR}" -maxdepth 1 -type d -name '*.app' -print -quit)
-          if [[ -z "${APP_DIR}" ]]; then
-            echo "::error::Release .app directory was not found."
-            exit 1
-          fi
-
-          APP_VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "${APP_DIR}/Info.plist")
-          IPA_NAME="Nuvio-Enhanced-v${APP_VERSION}.ipa"
-          OUTPUT_DIR="${GITHUB_WORKSPACE}/release-ipa"
-          STAGING_DIR="${RUNNER_TEMP}/nuvio-ipa-staging"
-
-          rm -rf "${OUTPUT_DIR}" "${STAGING_DIR}"
-          mkdir -p "${OUTPUT_DIR}" "${STAGING_DIR}/Payload"
-
-          ditto "${APP_DIR}" "${STAGING_DIR}/Payload/$(basename "${APP_DIR}")"
-          (
-            cd "${STAGING_DIR}"
-            /usr/bin/zip -qry "${OUTPUT_DIR}/${IPA_NAME}" Payload
-          )
-
-          echo "ipa_path=${OUTPUT_DIR}/${IPA_NAME}" >> "$GITHUB_OUTPUT"
-          echo "ipa_name=${IPA_NAME}" >> "$GITHUB_OUTPUT"
-          echo "app_version=${APP_VERSION}" >> "$GITHUB_OUTPUT"
-
-      - name: Upload IPA Artifact
+      - name: Upload iOS Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Nuvio-Enhanced-iOS
-          path: ${{ steps.package.outputs.ipa_path }}
+          name: Nuvio-iOS-${{ env.BUILD_SUFFIX }}
+          path: iosApp/build/Build/Products/Release-iphoneos/${{ env.IPA_NAME }}
 
-  create-release:
-    name: Publish GitHub Release
-    needs: build-ipa
-    if: inputs.mode != 'dry-run'
-    runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ github.token }}
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Read Version Metadata
-        id: meta
-        run: |
-          VERSION=$(sed -nE 's/^[[:space:]]*MARKETING_VERSION[[:space:]]*=[[:space:]]*([^[:space:]#]+).*$/\1/p' iosApp/Configuration/Version.xcconfig | head -n 1)
-          if [[ -z "$VERSION" ]]; then
-            VERSION="0.4.11"
-          fi
-          TAG="${{ inputs.custom_tag }}"
-          if [[ -z "$TAG" ]]; then
-            TAG="v${VERSION}"
-          fi
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
-
-      - name: Download Built IPA
-        uses: actions/download-artifact@v4
-        with:
-          name: Nuvio-Enhanced-iOS
-          path: ipa-files
-
-      - name: Generate Release Notes
-        id: notes
-        run: |
-          VERSION="${{ steps.meta.outputs.version }}"
-          TAG="${{ steps.meta.outputs.tag }}"
-
-          {
-            echo "## 🚀 Nuvio Enhanced iOS ${TAG}"
-            echo ""
-            echo "### 📱 iOS & iPadOS Sideload Release"
-            echo "Install using SideStore, AltStore, TrollStore, Scarlet, or Sideloadly."
-            echo ""
-            echo "#### SideStore & AltStore Source URL:"
-            echo "\`https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/main/NuvioEnhanced.json\`"
-            echo ""
-            echo "### 📦 Included IPA Files"
-            find ipa-files -type f -name '*.ipa' -exec basename {} \; | while read -r f; do
-              echo "- \`$f\`"
-            done
-            echo ""
-            echo "### 📝 Changelog"
-            if [ -f CHANGELOG.md ]; then
-              awk -v ver="${VERSION}" '
-                index($0, "## " ver) == 1 { capture = 1; next }
-                capture && /^## / { exit }
-                capture { print }
-              ' CHANGELOG.md || true
-            fi
-          } > release-notes.md
-
-          cat release-notes.md
-
-      - name: Create or Update GitHub Release
+      - name: Publish GitHub Release
         env:
-          TAG: ${{ steps.meta.outputs.tag }}
-          TITLE: "Nuvio Enhanced iOS ${{ steps.meta.outputs.tag }}"
-          MODE: ${{ inputs.mode }}
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.package.outputs.version }}
+          IPA_FILE: ${{ steps.package.outputs.ipa_path }}
         run: |
-          mapfile -t ipa_list < <(find ipa-files -type f -name '*.ipa' -print)
-          if (( ${#ipa_list[@]} == 0 )); then
-            echo "::error::No IPAs found to attach to release."
-            exit 1
-          fi
-
-          FLAGS=()
-          if [[ "${MODE}" == "draft" ]]; then
-            FLAGS+=(--draft)
-          fi
-
+          TAG="v${VERSION}"
           if gh release view "${TAG}" >/dev/null 2>&1; then
-            echo "Updating existing release ${TAG}..."
-            gh release upload "${TAG}" "${ipa_list[@]}" --clobber
+            echo "Release ${TAG} exists. Uploading IPA..."
+            gh release upload "${TAG}" "${IPA_FILE}" --clobber
           else
             echo "Creating new release ${TAG}..."
-            gh release create "${TAG}" "${ipa_list[@]}" \
-              --title "${TITLE}" \
-              --notes-file release-notes.md \
-              "${FLAGS[@]}"
+            gh release create "${TAG}" "${IPA_FILE}" \
+              --title "Nuvio Enhanced iOS ${TAG}" \
+              --notes "## 🚀 Nuvio Enhanced iOS ${TAG}
+
+Install using SideStore, AltStore, TrollStore, Scarlet, or Sideloadly.
+
+**SideStore/AltStore Source:**
+\`https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/main/NuvioEnhanced.json\`"
           fi
