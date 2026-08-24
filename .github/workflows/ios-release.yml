@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: Build a full or enhanced ipa
+        description: 'Build a full or enhanced ipa'
         required: true
         type: choice
         options:
@@ -13,7 +13,7 @@ on:
         default: enhanced
 
       description:
-        description: Run description
+        description: 'Run description'
         required: false
         type: string
         default: 'Automated Release'
@@ -87,7 +87,6 @@ jobs:
               content = f.read()
 
           for name, (url, checksum) in replacements.items():
-              # Match binaryTarget with path: for this exact name
               pattern = (
                   r'(\.binaryTarget\(\s*\n\s*name:\s*"' + re.escape(name) + r'",\s*\n)'
                   r'\s*path:\s*"[^"]+"\s*\n'
@@ -268,7 +267,7 @@ jobs:
           name: Nuvio-iOS-${{ env.BUILD_SUFFIX }}
           path: iosApp/build/Build/Products/Release-iphoneos/${{ env.IPA_NAME }}
 
-      - name: Publish GitHub Release
+      - name: Publish Release to GitHub
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.package.outputs.version }}
@@ -286,6 +285,6 @@ jobs:
 
 Install using SideStore, AltStore, TrollStore, Scarlet, or Sideloadly.
 
-**SideStore/AltStore Source:**
+**SideStore / AltStore Source:**
 \`https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/main/NuvioEnhanced.json\`"
           fi
