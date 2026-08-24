@@ -13,16 +13,6 @@ on:
           - dry-run
         default: publish
 
-      variant:
-        description: 'iOS Variant to build'
-        required: true
-        type: choice
-        options:
-          - enhanced
-          - full
-          - both
-        default: enhanced
-
       custom_tag:
         description: 'Custom tag name (optional, defaults to marketing version)'
         required: false
@@ -42,24 +32,20 @@ concurrency:
 
 jobs:
   build-ipa:
-    name: Build iOS IPA (${{ matrix.variant }})
+    name: Build iOS IPA (Enhanced Full)
     if: inputs.mode != 'dry-run'
-    runs-on: macos-15-intel
-    timeout-minutes: 90
-    strategy:
-      fail-fast: false
-      matrix:
-        variant: ${{ inputs.variant == 'both' && fromJSON('["enhanced", "full"]') || (inputs.variant == 'full' && fromJSON('["full"]') || fromJSON('["enhanced"]')) }}
+    runs-on: macos-14
+    timeout-minutes: 60
 
     env:
-      BUILD_VARIANT: ${{ matrix.variant }}
-      GRADLE_OPTS: -Xmx6g -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=1536m
-      KOTLIN_DAEMON_JVMARGS: -Xmx4g
+      NUVIO_IOS_DISTRIBUTION: full
+      GRADLE_OPTS: -Xmx8g -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=2048m
+      KOTLIN_DAEMON_JVMARGS: -Xmx6g
       GH_TOKEN: ${{ github.token }}
 
     steps:
       - name: Checkout Repository & Submodules
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           lfs: true
@@ -142,13 +128,13 @@ jobs:
           xcode-version: latest-stable
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Download Nuvio Engine Apple XCFramework
         env:
@@ -185,7 +171,7 @@ jobs:
       - name: Generate local.properties & gradle.properties
         run: |
           cat << 'EOF' > local.properties
-          NUVIO_IOS_DISTRIBUTION=${{ env.BUILD_VARIANT }}
+          NUVIO_IOS_DISTRIBUTION=full
           NUVIO_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
           NUVIO_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
           TRAKT_CLIENT_ID=${{ secrets.TRAKT_CLIENT_ID }}
@@ -198,11 +184,16 @@ jobs:
           EOF
 
           cat >> gradle.properties << 'EOF'
-          org.gradle.jvmargs=-Xmx6g -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=1536m
+          org.gradle.jvmargs=-Xmx8g -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=2048m
           org.gradle.configuration-cache=false
-          kotlin.daemon.jvmargs=-Xmx4g
-          kotlin.native.jvmArgs=-Xmx4g
+          kotlin.daemon.jvmargs=-Xmx6g
+          kotlin.native.jvmArgs=-Xmx6g
           EOF
+
+      - name: Compile Kotlin Multiplatform Framework
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :composeApp:assembleComposeAppReleaseFrameworkIosArm64 --stacktrace
 
       - name: Build iOS App via Xcode
         run: |
@@ -232,16 +223,9 @@ jobs:
           fi
 
           APP_VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "${APP_DIR}/Info.plist")
-          
-          if [ "${BUILD_VARIANT}" = "full" ]; then
-            SUFFIX="Full"
-          else
-            SUFFIX="Enhanced"
-          fi
-
-          IPA_NAME="Nuvio-v${APP_VERSION}-${SUFFIX}.ipa"
+          IPA_NAME="Nuvio-Enhanced-v${APP_VERSION}.ipa"
           OUTPUT_DIR="${GITHUB_WORKSPACE}/release-ipa"
-          STAGING_DIR="${RUNNER_TEMP}/nuvio-ipa-staging-${SUFFIX}"
+          STAGING_DIR="${RUNNER_TEMP}/nuvio-ipa-staging"
 
           rm -rf "${OUTPUT_DIR}" "${STAGING_DIR}"
           mkdir -p "${OUTPUT_DIR}" "${STAGING_DIR}/Payload"
@@ -255,12 +239,11 @@ jobs:
           echo "ipa_path=${OUTPUT_DIR}/${IPA_NAME}" >> "$GITHUB_OUTPUT"
           echo "ipa_name=${IPA_NAME}" >> "$GITHUB_OUTPUT"
           echo "app_version=${APP_VERSION}" >> "$GITHUB_OUTPUT"
-          echo "suffix=${SUFFIX}" >> "$GITHUB_OUTPUT"
 
       - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
-          name: ipa-${{ steps.package.outputs.suffix }}
+          name: Nuvio-Enhanced-iOS
           path: ${{ steps.package.outputs.ipa_path }}
 
   create-release:
@@ -273,7 +256,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -291,12 +274,11 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
 
-      - name: Download All Built IPAs
-        uses: actions/download-artifact@v7
+      - name: Download Built IPA
+        uses: actions/download-artifact@v4
         with:
-          pattern: ipa-*
+          name: Nuvio-Enhanced-iOS
           path: ipa-files
-          merge-multiple: true
 
       - name: Generate Release Notes
         id: notes
