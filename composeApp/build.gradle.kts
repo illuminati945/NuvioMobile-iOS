@@ -523,6 +523,8 @@ kotlin {
                     "-framework", "SystemConfiguration",
                     "-framework", "CoreFoundation",
                     "-framework", "UIKit",
+                    "-Wl,-U,_OBJC_CLASS_\$_UIViewLayoutRegion",
+                    "-Wl,-U,_OBJC_METACLASS_\$_UIViewLayoutRegion",
                 )
             }
         }

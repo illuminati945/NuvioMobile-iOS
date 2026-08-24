@@ -39,3 +39,11 @@ void NuvioSetAlternateAppIconName(const char *name, NuvioAppIconCompletion compl
         dispatch_async(dispatch_get_main_queue(), changeIcon);
     }
 }
+
+__attribute__((visibility("default")))
+@interface UIViewLayoutRegion : NSObject
+@end
+
+@implementation UIViewLayoutRegion
+@end
+

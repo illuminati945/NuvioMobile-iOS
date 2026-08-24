@@ -439,6 +439,8 @@
 					SystemConfiguration,
 					"-framework",
 					UIKit,
+					"-Wl,-U,_OBJC_CLASS_$_UIViewLayoutRegion",
+					"-Wl,-U,_OBJC_METACLASS_$_UIViewLayoutRegion",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.nuvio.enhanced;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -484,6 +486,8 @@
 					SystemConfiguration,
 					"-framework",
 					UIKit,
+					"-Wl,-U,_OBJC_CLASS_$_UIViewLayoutRegion",
+					"-Wl,-U,_OBJC_METACLASS_$_UIViewLayoutRegion",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.nuvio.enhanced;
 				SWIFT_EMIT_LOC_STRINGS = YES;
