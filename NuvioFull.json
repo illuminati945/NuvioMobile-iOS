@@ -3,7 +3,7 @@
   "subtitle": "Official Full variant for AltStore and SideStore.",
   "description": "Community update channel for the Nuvio Full iOS variant.",
   "website": "https://github.com/illuminati945/NuvioMobile-iOS",
-  "iconURL": "https://raw.githubusercontent.com/AKRusso/NuvioMobile-Enhanced/enhanced/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/app-icon-1024.png",
+  "iconURL": "https://raw.githubusercontent.com/illuminati945/NuvioMobile-iOS/main/iosApp/iosApp/Assets.xcassets/IconEnhanced.appiconset/icon-1024.png",
   "tintColor": "7B2FF7",
   "featuredApps": [
     "com.nuvio.enhanced"
@@ -16,7 +16,7 @@
       "developerName": "Nuvio Community",
       "subtitle": "Watch movies, TV shows & anime anywhere",
       "localizedDescription": "Full build of Nuvio Mobile for iOS and iPadOS.",
-      "iconURL": "https://raw.githubusercontent.com/AKRusso/NuvioMobile-Enhanced/enhanced/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/app-icon-1024.png",
+      "iconURL": "https://raw.githubusercontent.com/illuminati945/NuvioMobile-iOS/main/iosApp/iosApp/Assets.xcassets/IconEnhanced.appiconset/icon-1024.png",
       "tintColor": "7B2FF7",
       "category": "entertainment",
       "versions": [
