@@ -47,6 +47,18 @@ import platform.posix.fflush
 import platform.posix.fopen
 import platform.posix.fwrite
 
+import platform.UserNotifications.UNMutableNotificationContent
+import platform.UserNotifications.UNNotificationRequest
+import platform.UserNotifications.UNNotificationSound
+import platform.UserNotifications.UNTimeIntervalNotificationTrigger
+import platform.UserNotifications.UNUserNotificationCenter
+import platform.UIKit.UIBackgroundTaskIdentifier
+import platform.UIKit.UIBackgroundTaskInvalid
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
+import platform.darwin.dispatch_sync
+import platform.Foundation.NSThread
+
 private const val DOWNLOAD_REQUEST_TIMEOUT_SECONDS = 60.0
 private const val DOWNLOAD_RESOURCE_TIMEOUT_SECONDS = 24.0 * 60.0 * 60.0
 private const val PROGRESS_MIN_INTERVAL_SECONDS = 0.5
@@ -62,7 +74,25 @@ fun handleDownloadsBackgroundEvents(
 }
 
 fun pauseDownloadsForAppBackground() {
-    DownloadsRepository.pauseActiveDownloads()
+    // Keep downloads running continuously in background
+}
+
+private fun postLocalDownloadNotification(title: String, body: String) {
+    runCatching {
+        val content = UNMutableNotificationContent().apply {
+            setTitle(title)
+            setBody(body)
+            setSound(UNNotificationSound.defaultSound())
+        }
+        val trigger = UNTimeIntervalNotificationTrigger.triggerWithTimeInterval(0.1, repeats = false)
+        val identifier = "nuvio.download.${NSDate().timeIntervalSince1970}"
+        val request = UNNotificationRequest.requestWithIdentifier(
+            identifier = identifier,
+            content = content,
+            trigger = trigger,
+        )
+        UNUserNotificationCenter.currentNotificationCenter().addNotificationRequest(request, null)
+    }
 }
 
 @OptIn(ExperimentalForeignApi::class)
@@ -81,6 +111,23 @@ internal actual object DownloadsPlatformDownloader {
             val downloadsDirectory = downloadsDirectoryPath()
             val destinationPath = "$downloadsDirectory/${request.destinationFileName}"
             val tempPath = "$downloadsDirectory/${request.destinationFileName}.part"
+            var bgTaskId: UIBackgroundTaskIdentifier = UIBackgroundTaskInvalid
+
+            runCatching {
+                if (NSThread.isMainThread) {
+                    bgTaskId = UIApplication.sharedApplication.beginBackgroundTaskWithName("NuvioDownload_${request.destinationFileName}") {
+                        UIApplication.sharedApplication.endBackgroundTask(bgTaskId)
+                        bgTaskId = UIBackgroundTaskInvalid
+                    }
+                } else {
+                    dispatch_sync(dispatch_get_main_queue()) {
+                        bgTaskId = UIApplication.sharedApplication.beginBackgroundTaskWithName("NuvioDownload_${request.destinationFileName}") {
+                            UIApplication.sharedApplication.endBackgroundTask(bgTaskId)
+                            bgTaskId = UIBackgroundTaskInvalid
+                        }
+                    }
+                }
+            }
 
             try {
                 var resumeFromBytes = fileSizeOrNull(tempPath)?.coerceAtLeast(0L) ?: 0L
@@ -135,10 +182,21 @@ internal actual object DownloadsPlatformDownloader {
                 val localFileUri = NSURL.fileURLWithPath(destinationPath).absoluteString ?: "file://$destinationPath"
                 val finalSize = fileSizeOrNull(destinationPath)
                 onSuccess(localFileUri, totalBytes ?: finalSize)
+                postLocalDownloadNotification("Download Complete", request.destinationFileName)
             } catch (_: CancellationException) {
                 handle.cancelNativeTask()
             } catch (error: Throwable) {
-                onFailure(error.message ?: runBlocking { getString(Res.string.download_failed) })
+                val errorMsg = error.message ?: runBlocking { getString(Res.string.download_failed) }
+                onFailure(errorMsg)
+                postLocalDownloadNotification("Download Failed", errorMsg)
+            } finally {
+                if (bgTaskId != UIBackgroundTaskInvalid) {
+                    val taskIdToEnd = bgTaskId
+                    bgTaskId = UIBackgroundTaskInvalid
+                    dispatch_async(dispatch_get_main_queue()) {
+                        UIApplication.sharedApplication.endBackgroundTask(taskIdToEnd)
+                    }
+                }
             }
         }
 
@@ -247,7 +305,17 @@ internal actual object DownloadsPlatformDownloader {
     }
 
     actual fun openDownloadsDirectory(): Boolean {
-        val url = NSURL.fileURLWithPath(downloadsDirectoryPath())
+        val path = downloadsDirectoryPath()
+        val url = NSURL.fileURLWithPath(path)
+        val filesUrl = NSURL(string = "shareddocuments://") ?: url
+        if (UIApplication.sharedApplication.canOpenURL(filesUrl)) {
+            UIApplication.sharedApplication.openURL(
+                url = filesUrl,
+                options = emptyMap<Any?, Any>(),
+                completionHandler = null,
+            )
+            return true
+        }
         UIApplication.sharedApplication.openURL(
             url = url,
             options = emptyMap<Any?, Any>(),

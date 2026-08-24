@@ -13,6 +13,11 @@ final class OrientationLockAppDelegate: NSObject, UIApplicationDelegate, UNUserN
         OrientationLockCoordinator.shared.start()
         DownloadsLiveActivityManager.shared.start()
         UNUserNotificationCenter.current().delegate = self
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+            if let error = error {
+                print("Notification permission error: \(error.localizedDescription)")
+            }
+        }
         return true
     }
 
@@ -35,7 +40,7 @@ final class OrientationLockAppDelegate: NSObject, UIApplicationDelegate, UNUserN
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
-        DownloadsPlatformDownloader_iosKt.pauseDownloadsForAppBackground()
+        // Keep downloads active in background
     }
 
     func userNotificationCenter(

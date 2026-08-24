@@ -1073,47 +1073,45 @@ private fun NuvioEnhancedSettingsPageContent(
             }
         }
 
-        if (!isIos) {
-            SettingsSection(
-                title = stringResource(Res.string.nuvio_enhanced_section_downloads),
-                isTablet = isTablet,
-            ) {
-                SettingsGroup(isTablet = isTablet) {
-                    SettingsNavigationRow(
-                        title = stringResource(
-                            if (externalFolderState.uri.isNullOrBlank()) {
-                                Res.string.nuvio_enhanced_external_folder_choose_title
-                            } else {
-                                Res.string.nuvio_enhanced_external_folder_change_title
-                            },
-                        ),
-                        description = when {
-                            externalFolderState.unavailable -> stringResource(
-                                Res.string.nuvio_enhanced_external_folder_unavailable_description,
-                            )
-                            !externalFolderState.displayName.isNullOrBlank() -> externalFolderState.displayName.orEmpty()
-                            else -> stringResource(Res.string.nuvio_enhanced_external_folder_description)
+        SettingsSection(
+            title = stringResource(Res.string.nuvio_enhanced_section_downloads),
+            isTablet = isTablet,
+        ) {
+            SettingsGroup(isTablet = isTablet) {
+                SettingsNavigationRow(
+                    title = stringResource(
+                        if (externalFolderState.uri.isNullOrBlank()) {
+                            Res.string.nuvio_enhanced_external_folder_choose_title
+                        } else {
+                            Res.string.nuvio_enhanced_external_folder_change_title
                         },
-                        icon = Icons.Rounded.Folder,
-                        isTablet = isTablet,
-                        onClick = {
-                            DownloadsExternalFolderPlatform.chooseFolder { result ->
-                                result.onFailure { error ->
-                                    NuvioToastController.show(error.message ?: externalFolderFailedMessage)
-                                }
-                            }
-                        },
-                    )
-                    if (!externalFolderState.uri.isNullOrBlank()) {
-                        SettingsGroupDivider(isTablet = isTablet)
-                        SettingsNavigationRow(
-                            title = stringResource(Res.string.nuvio_enhanced_external_folder_remove_title),
-                            description = stringResource(Res.string.nuvio_enhanced_external_folder_remove_description),
-                            icon = Icons.Rounded.Delete,
-                            isTablet = isTablet,
-                            onClick = DownloadsExternalFolderPlatform::clearFolder,
+                    ),
+                    description = when {
+                        externalFolderState.unavailable -> stringResource(
+                            Res.string.nuvio_enhanced_external_folder_unavailable_description,
                         )
-                    }
+                        !externalFolderState.displayName.isNullOrBlank() -> externalFolderState.displayName.orEmpty()
+                        else -> stringResource(Res.string.nuvio_enhanced_external_folder_description)
+                    },
+                    icon = Icons.Rounded.Folder,
+                    isTablet = isTablet,
+                    onClick = {
+                        DownloadsExternalFolderPlatform.chooseFolder { result ->
+                            result.onFailure { error ->
+                                NuvioToastController.show(error.message ?: externalFolderFailedMessage)
+                            }
+                        }
+                    },
+                )
+                if (!externalFolderState.uri.isNullOrBlank()) {
+                    SettingsGroupDivider(isTablet = isTablet)
+                    SettingsNavigationRow(
+                        title = stringResource(Res.string.nuvio_enhanced_external_folder_remove_title),
+                        description = stringResource(Res.string.nuvio_enhanced_external_folder_remove_description),
+                        icon = Icons.Rounded.Delete,
+                        isTablet = isTablet,
+                        onClick = DownloadsExternalFolderPlatform::clearFolder,
+                    )
                 }
             }
         }
