@@ -281,10 +281,5 @@ jobs:
             echo "Creating new release ${TAG}..."
             gh release create "${TAG}" "${IPA_FILE}" \
               --title "Nuvio Enhanced iOS ${TAG}" \
-              --notes "## 🚀 Nuvio Enhanced iOS ${TAG}
-
-Install using SideStore, AltStore, TrollStore, Scarlet, or Sideloadly.
-
-**SideStore / AltStore Source:**
-\`https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/main/NuvioEnhanced.json\`"
+              --notes "Release of Nuvio Enhanced iOS ${TAG}"
           fi
