@@ -298,14 +298,15 @@ val releaseAppVersionName = readXcconfigValue(appVersionConfigFile, "MARKETING_V
 val releaseAppVersionCode = readXcconfigValue(appVersionConfigFile, "CURRENT_PROJECT_VERSION")
     ?.toIntOrNull()
     ?: error("CURRENT_PROJECT_VERSION is missing or invalid in ${appVersionConfigFile.path}")
-val iosDistribution = (
+val iosDistributionRaw = (
     providers.gradleProperty("nuvio.ios.distribution").orNull
         ?: System.getenv("NUVIO_IOS_DISTRIBUTION")
         ?: supabaseProps.getProperty("NUVIO_IOS_DISTRIBUTION")
         ?: "full"
     ).trim().lowercase()
+val iosDistribution = if (iosDistributionRaw == "enhanced") "full" else iosDistributionRaw
 require(iosDistribution == "appstore" || iosDistribution == "full") {
-    "NUVIO_IOS_DISTRIBUTION must be 'appstore' or 'full'."
+    "NUVIO_IOS_DISTRIBUTION must be 'appstore', 'full', or 'enhanced'."
 }
 val iosDistributionSourceDir = if (iosDistribution == "full") {
     "src/iosFull/kotlin"
