@@ -26,7 +26,7 @@
           "date": "2026-08-25T19:57:00Z",
           "localizedDescription": "# 🚀 Nuvio Full iOS v0.4.16\n\nFull official build with native iOS edge-swipe back gestures, Liquid Glass floating tab bar, stable navigation container, indefinite background downloads, notification support, and Files app access.",
           "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.16/Nuvio-v0.4.16-Full.ipa",
-          "size": 61310788,
+          "size": 61332307,
           "minOSVersion": "16.0"
         }
       ]
