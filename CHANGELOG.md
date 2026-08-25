@@ -3,6 +3,18 @@
 All notable Nuvio Enhanced changes are recorded here. GitHub release notes use the
 same user-facing summary so the in-app updater can display it before download.
 
+## 0.4.15 - 2026-08-25
+
+### Fixed & Enhanced
+
+- **Navigation Bar Tab-Switch Jump/Bounce Fix**: Resolved the UI glitch where the bottom navigation bar jumped up and returned when switching between tabs (Home, Search, Library, Settings). Locked nested scroll listeners during tab transitions and enforced a stable, rock-solid container height.
+- **Apple Liquid Glass Navigation Bar**: Upgraded the floating navigation pill to authentic Apple Liquid Glass aesthetic featuring `hazeEffect` real-time frosted backdrop blur, specular gradient border stroke, subtle top-edge highlight sheen, and drop shadow.
+- **Default Liquid Glass Out-of-the-Box**: Enabled Liquid Glass and adaptive auto-hide by default across all app installs and profile creations.
+
+### Release
+
+- Versioned as Nuvio Enhanced `0.4.15 (119)`.
+
 ## 0.4.14 - 2026-08-25
 
 ### Added & Enhanced

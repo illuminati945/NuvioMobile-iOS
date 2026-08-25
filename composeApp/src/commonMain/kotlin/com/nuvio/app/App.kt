@@ -2035,6 +2035,13 @@ private fun MainAppContent(
                         val navBarScrollState = rememberNuvioNavBarScrollState()
                         val navBarHazeState = rememberHazeState()
                         val navBarStyleSetting by remember { ThemeSettingsRepository.navBarStyle }.collectAsStateWithLifecycle()
+
+                        LaunchedEffect(selectedTab) {
+                            navBarScrollState.lockForTabSwitch()
+                            kotlinx.coroutines.delay(350)
+                            navBarScrollState.unlock()
+                        }
+
                         val onProfileSelected: (NuvioProfile) -> Unit = { profile ->
                             nativeProfileSwitcherVisible = false
                             profileSwitchLoading = true

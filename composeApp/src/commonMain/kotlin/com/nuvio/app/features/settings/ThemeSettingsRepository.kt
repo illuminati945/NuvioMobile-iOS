@@ -24,10 +24,10 @@ object ThemeSettingsRepository {
     private val _amoledEnabled = MutableStateFlow(false)
     val amoledEnabled: StateFlow<Boolean> = _amoledEnabled.asStateFlow()
 
-    private val _liquidGlassNativeTabBarEnabled = MutableStateFlow(false)
+    private val _liquidGlassNativeTabBarEnabled = MutableStateFlow(true)
     val liquidGlassNativeTabBarEnabled: StateFlow<Boolean> = _liquidGlassNativeTabBarEnabled.asStateFlow()
 
-    private val _liquidGlassAutoHideOnScrollEnabled = MutableStateFlow(false)
+    private val _liquidGlassAutoHideOnScrollEnabled = MutableStateFlow(true)
     val liquidGlassAutoHideOnScrollEnabled: StateFlow<Boolean> = _liquidGlassAutoHideOnScrollEnabled.asStateFlow()
 
     private val _selectedAppLanguage = MutableStateFlow(AppLanguage.DEVICE)
@@ -53,10 +53,10 @@ object ThemeSettingsRepository {
         _customThemeFirstColor.value = ThemeAccentColor.PINK.color
         _customThemeSecondColor.value = ThemeAccentColor.CYAN.color
         _amoledEnabled.value = false
-        _liquidGlassNativeTabBarEnabled.value = false
-        _liquidGlassAutoHideOnScrollEnabled.value = false
+        _liquidGlassNativeTabBarEnabled.value = true
+        _liquidGlassAutoHideOnScrollEnabled.value = true
         NativeTabBridge.publishAccentColor(AppTheme.WHITE.nativeTabAccentHex())
-        NativeTabBridge.publishLiquidGlassEnabled(false)
+        NativeTabBridge.publishLiquidGlassEnabled(true)
         _selectedAppLanguage.value = AppLanguage.DEVICE
         _navBarStyle.value = NavBarStyle.ADAPTIVE
     }
@@ -72,10 +72,10 @@ object ThemeSettingsRepository {
             .toThemeColor(ThemeAccentColor.CYAN.color)
         NativeTabBridge.publishAccentColor(theme.nativeTabAccentHex(_customThemeFirstColor.value))
         _amoledEnabled.value = ThemeSettingsStorage.loadAmoledEnabled() ?: false
-        val liquidGlassEnabled = ThemeSettingsStorage.loadLiquidGlassNativeTabBarEnabled() ?: false
+        val liquidGlassEnabled = ThemeSettingsStorage.loadLiquidGlassNativeTabBarEnabled() ?: true
         _liquidGlassNativeTabBarEnabled.value = liquidGlassEnabled
         _liquidGlassAutoHideOnScrollEnabled.value =
-            ThemeSettingsStorage.loadLiquidGlassAutoHideOnScrollEnabled() ?: false
+            ThemeSettingsStorage.loadLiquidGlassAutoHideOnScrollEnabled() ?: true
         NativeTabBridge.publishLiquidGlassEnabled(liquidGlassEnabled)
         val appLanguage = AppLanguage.fromCode(ThemeSettingsStorage.loadSelectedAppLanguage())
         ThemeSettingsStorage.applySelectedAppLanguage(appLanguage.code)

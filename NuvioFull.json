@@ -21,11 +21,11 @@
       "category": "entertainment",
       "versions": [
         {
-          "version": "0.4.14",
-          "buildVersion": "118",
-          "date": "2026-08-25T09:35:00Z",
-          "localizedDescription": "# 🚀 Nuvio Full iOS v0.4.14\n\nFull official build for iOS and iPadOS with sideload support, Liquid Glass UI, auto-hide on scroll, indefinite background downloads, notification support, and Files app access.",
-          "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.14/Nuvio-v0.4.14-Full.ipa",
+          "version": "0.4.15",
+          "buildVersion": "119",
+          "date": "2026-08-25T17:15:00Z",
+          "localizedDescription": "# 🚀 Nuvio Full iOS v0.4.15\n\nFull official build with Liquid Glass floating tab bar, tab-switch jump/bounce fix, stable height container, indefinite background downloads, notification support, and Files app access.",
+          "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.15/Nuvio-v0.4.15-Full.ipa",
           "size": 61304565,
           "minOSVersion": "16.0"
         }
