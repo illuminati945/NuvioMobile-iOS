@@ -26,7 +26,7 @@
           "date": "2026-08-25T05:45:00Z",
           "localizedDescription": "# 🚀 Nuvio Enhanced iOS v0.4.13\n\n- Indefinite background downloads via background audio keep-alive\n- Native interactive iOS folder picker (UIDocumentPickerViewController)\n- Reliable local notifications, haptics & audio chimes for LiveContainer & SideStore\n- Immediate Files app discovery (.keep file initialization)\n- Startup coordinators & notification center activation",
           "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.13/Nuvio-v0.4.13-Enhanced.ipa",
-          "size": 61296443,
+          "size": 61301550,
           "minOSVersion": "16.0"
         }
       ]
