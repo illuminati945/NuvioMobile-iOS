@@ -131,28 +131,28 @@ final class DownloadsBackgroundKeepAlive: NSObject, UIDocumentPickerDelegate {
 
         // RIFF
         data.append(contentsOf: [0x52, 0x49, 0x46, 0x46]) // "RIFF"
-        data.append(contentsOf: withUnsafeBytes(of: totalSize.littleEndian) { Array(bash) })
+        data.append(contentsOf: withUnsafeBytes(of: totalSize.littleEndian) { Array($0) })
         data.append(contentsOf: [0x57, 0x41, 0x56, 0x45]) // "WAVE"
 
         // fmt 
         data.append(contentsOf: [0x66, 0x6D, 0x74, 0x20]) // "fmt "
         let subchunk1Size: Int32 = 16
-        data.append(contentsOf: withUnsafeBytes(of: subchunk1Size.littleEndian) { Array(bash) })
+        data.append(contentsOf: withUnsafeBytes(of: subchunk1Size.littleEndian) { Array($0) })
         let audioFormat: Int16 = 1 // PCM
-        data.append(contentsOf: withUnsafeBytes(of: audioFormat.littleEndian) { Array(bash) })
+        data.append(contentsOf: withUnsafeBytes(of: audioFormat.littleEndian) { Array($0) })
         let numChannels: Int16 = 1 // Mono
-        data.append(contentsOf: withUnsafeBytes(of: numChannels.littleEndian) { Array(bash) })
-        data.append(contentsOf: withUnsafeBytes(of: sampleRate.littleEndian) { Array(bash) })
+        data.append(contentsOf: withUnsafeBytes(of: numChannels.littleEndian) { Array($0) })
+        data.append(contentsOf: withUnsafeBytes(of: sampleRate.littleEndian) { Array($0) })
         let byteRate: Int32 = sampleRate * 1 * 1
-        data.append(contentsOf: withUnsafeBytes(of: byteRate.littleEndian) { Array(bash) })
+        data.append(contentsOf: withUnsafeBytes(of: byteRate.littleEndian) { Array($0) })
         let blockAlign: Int16 = 1
-        data.append(contentsOf: withUnsafeBytes(of: blockAlign.littleEndian) { Array(bash) })
+        data.append(contentsOf: withUnsafeBytes(of: blockAlign.littleEndian) { Array($0) })
         let bitsPerSample: Int16 = 8
-        data.append(contentsOf: withUnsafeBytes(of: bitsPerSample.littleEndian) { Array(bash) })
+        data.append(contentsOf: withUnsafeBytes(of: bitsPerSample.littleEndian) { Array($0) })
 
         // data
         data.append(contentsOf: [0x64, 0x61, 0x74, 0x61]) // "data"
-        data.append(contentsOf: withUnsafeBytes(of: dataSize.littleEndian) { Array(bash) })
+        data.append(contentsOf: withUnsafeBytes(of: dataSize.littleEndian) { Array($0) })
         data.append(contentsOf: [UInt8](repeating: 128, count: Int(dataSize)))
 
         return data
