@@ -22,11 +22,11 @@
       "versions": [
         {
           "version": "0.4.14",
-          "buildVersion": "118",
-          "date": "2026-08-25T09:35:00Z",
-          "localizedDescription": "# 🚀 Nuvio Enhanced iOS v0.4.14\n\n- Apple see-through Liquid Glass floating tab bar with spring morphing & gesture bridging\n- Auto-hide tab bar on scroll down & reveal on scroll up\n- Hero stretch overscroll with elastic rubber-band pull-down physics\n- Smooth scrolling optimizations across all tabs\n- Rapid profile switcher popover with PIN verification\n- Indefinite background downloads via audio keep-alive & Files app support",
+          "buildVersion": "115",
+          "date": "2026-08-25T12:49:38Z",
+          "localizedDescription": "# \ud83d\ude80 Nuvio Enhanced iOS v0.4.14\n\n- Latest upstream enhancements & fixes\n- SideStore and AltStore community source support\n- Automated GitHub Actions compilation\n- Live TV and M3U EPG integration\n- Subtitle styling and language grouping\n- Performance and memory stability improvements",
           "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.14/Nuvio-v0.4.14-Enhanced.ipa",
-          "size": 61301550,
+          "size": 61304565,
           "minOSVersion": "16.0"
         }
       ]
