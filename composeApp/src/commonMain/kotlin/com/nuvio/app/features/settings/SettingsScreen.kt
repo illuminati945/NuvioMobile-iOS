@@ -924,6 +924,7 @@ private fun MobileSettingsScreen(
         }
     }
 }
+}
 
 @Composable
 private fun rememberSettingsRootSearchRevealConnection(
