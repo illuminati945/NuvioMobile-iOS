@@ -122,6 +122,21 @@ final class DownloadsBackgroundKeepAlive: NSObject, UIDocumentPickerDelegate {
         }
     }
 
+    private func int16ToBytes(_ value: Int16) -> [UInt8] {
+        let u = UInt16(bitPattern: value)
+        return [UInt8(u & 0xFF), UInt8((u >> 8) & 0xFF)]
+    }
+
+    private func int32ToBytes(_ value: Int32) -> [UInt8] {
+        let u = UInt32(bitPattern: value)
+        return [
+            UInt8(u & 0xFF),
+            UInt8((u >> 8) & 0xFF),
+            UInt8((u >> 16) & 0xFF),
+            UInt8((u >> 24) & 0xFF)
+        ]
+    }
+
     private func createSilentWavData() -> Data {
         let sampleRate: Int32 = 8000
         let numSamples: Int32 = 8000 // 1 second
@@ -131,28 +146,28 @@ final class DownloadsBackgroundKeepAlive: NSObject, UIDocumentPickerDelegate {
 
         // RIFF
         data.append(contentsOf: [0x52, 0x49, 0x46, 0x46]) // "RIFF"
-        data.append(contentsOf: withUnsafeBytes(of: totalSize.littleEndian) { Array($0) })
+        data.append(contentsOf: int32ToBytes(totalSize))
         data.append(contentsOf: [0x57, 0x41, 0x56, 0x45]) // "WAVE"
 
         // fmt 
         data.append(contentsOf: [0x66, 0x6D, 0x74, 0x20]) // "fmt "
         let subchunk1Size: Int32 = 16
-        data.append(contentsOf: withUnsafeBytes(of: subchunk1Size.littleEndian) { Array($0) })
+        data.append(contentsOf: int32ToBytes(subchunk1Size))
         let audioFormat: Int16 = 1 // PCM
-        data.append(contentsOf: withUnsafeBytes(of: audioFormat.littleEndian) { Array($0) })
+        data.append(contentsOf: int16ToBytes(audioFormat))
         let numChannels: Int16 = 1 // Mono
-        data.append(contentsOf: withUnsafeBytes(of: numChannels.littleEndian) { Array($0) })
-        data.append(contentsOf: withUnsafeBytes(of: sampleRate.littleEndian) { Array($0) })
+        data.append(contentsOf: int16ToBytes(numChannels))
+        data.append(contentsOf: int32ToBytes(sampleRate))
         let byteRate: Int32 = sampleRate * 1 * 1
-        data.append(contentsOf: withUnsafeBytes(of: byteRate.littleEndian) { Array($0) })
+        data.append(contentsOf: int32ToBytes(byteRate))
         let blockAlign: Int16 = 1
-        data.append(contentsOf: withUnsafeBytes(of: blockAlign.littleEndian) { Array($0) })
+        data.append(contentsOf: int16ToBytes(blockAlign))
         let bitsPerSample: Int16 = 8
-        data.append(contentsOf: withUnsafeBytes(of: bitsPerSample.littleEndian) { Array($0) })
+        data.append(contentsOf: int16ToBytes(bitsPerSample))
 
         // data
         data.append(contentsOf: [0x64, 0x61, 0x74, 0x61]) // "data"
-        data.append(contentsOf: withUnsafeBytes(of: dataSize.littleEndian) { Array($0) })
+        data.append(contentsOf: int32ToBytes(dataSize))
         data.append(contentsOf: [UInt8](repeating: 128, count: Int(dataSize)))
 
         return data
