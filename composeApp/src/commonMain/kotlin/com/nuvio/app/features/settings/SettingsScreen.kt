@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nuvio.app.core.ui.AppTheme
+import com.nuvio.app.core.ui.IosSwipeBackContainer
 import com.nuvio.app.core.ui.LocalNuvioBottomNavigationOverlayPadding
 import com.nuvio.app.core.ui.LocalTvLayoutProfile
 import com.nuvio.app.core.ui.NuvioScreen
@@ -701,11 +702,15 @@ private fun MobileSettingsScreen(
             }
         }
 
-        NuvioScreen(
-            modifier = Modifier.nestedScroll(rootSearchRevealConnection),
-            listState = listState,
-            autoHidesNativeTabBar = page == SettingsPage.Root,
+        IosSwipeBackContainer(
+            enabled = page.previousPage() != null,
+            onBack = onNavigateBack,
         ) {
+            NuvioScreen(
+                modifier = Modifier.nestedScroll(rootSearchRevealConnection),
+                listState = listState,
+                autoHidesNativeTabBar = page == SettingsPage.Root,
+            ) {
             if (showInternalHeader) {
                 stickyHeader {
                     val previousPage = page.previousPage()

@@ -3,6 +3,17 @@
 All notable Nuvio Enhanced changes are recorded here. GitHub release notes use the
 same user-facing summary so the in-app updater can display it before download.
 
+## 0.4.16 - 2026-08-25
+
+### Added & Enhanced
+
+- **Native iOS Edge-Swipe Back Gesture**: Enabled interactive swipe-to-go-back gesture defaults across all secondary screens, settings subpages (Playback, Appearance, Debrid, Notifications, etc.), media detail screens, stream selection views, entity browsers, catalogs, and collections.
+- **Interactive Drag Physics & Depth Cues**: Features smooth continuous finger tracking, progressive backdrop scrim fading, left-edge depth shadow cues, haptic feedback on dismissal threshold, and spring release animation.
+
+### Release
+
+- Versioned as Nuvio Enhanced `0.4.16 (120)`.
+
 ## 0.4.15 - 2026-08-25
 
 ### Fixed & Enhanced
