@@ -71,7 +71,7 @@ fun pauseDownloadsForAppBackground() {
 
 private fun postLocalDownloadNotification(title: String, body: String, isSuccess: Boolean) {
     dispatch_async(dispatch_get_main_queue()) {
-        val userInfo = mapOf(
+        val userInfo: Map<Any?, *> = mapOf<Any?, Any?>(
             "title" to title,
             "body" to body,
             "success" to (if (isSuccess) "1" else "0"),
