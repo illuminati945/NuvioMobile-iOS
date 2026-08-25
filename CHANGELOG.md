@@ -3,6 +3,20 @@
 All notable Nuvio Enhanced changes are recorded here. GitHub release notes use the
 same user-facing summary so the in-app updater can display it before download.
 
+## 0.4.14 - 2026-08-25
+
+### Added & Enhanced
+
+- **Apple See-Through Liquid Glass Tab Bar**: Integrated floating translucent frosted glass pill tab bar (`NuvioGlassTabBar.swift`) with dynamic spring-interpolated capsule morphing, gesture drag bridging, and long-press rapid profile switcher with PIN verification.
+- **Auto-Hide Tab Bar on Scroll**: Added smooth auto-hide on downward scroll and instant reveal on upward scroll across Home, Search, Library, and Settings tabs (`NativeTabBarScrollEffect.kt`).
+- **Hero Stretch Overscroll**: Added native iOS elastic rubber-band pull-down physics with smooth zoom scaling and backdrop blur on hero headers (`HeroStretchOverscroll.kt`).
+- **Smooth Scrolling Performance**: Optimized LazyColumn scrolling with stabilized keys and preserved horizontal rail positions across catalog updates.
+- **Immersive System UI Coordinator**: Integrated smooth fullscreen video playback mode handling (`NuvioImmersiveSystemUI.swift`).
+
+### Release
+
+- Versioned as Nuvio Enhanced `0.4.14 (118)`.
+
 ## 0.4.13 - 2026-08-25
 
 ### Added & Fixed

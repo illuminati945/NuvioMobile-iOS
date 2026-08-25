@@ -29,7 +29,7 @@
 
 #### 1. LiveContainer / LiveLauncher
 - Tap [**Open in LiveContainer**](https://altdirect.app/?url=https%3A%2F%2Fraw.githubusercontent.com%2Filluminati945%2FNuvioMobile-iOS%2Fmain%2FNuvioEnhanced.json&r=livecontainer), or download the `.ipa` from [**Releases**](https://github.com/illuminati945/NuvioMobile-iOS/releases/latest).
-- In **LiveContainer**, tap **`+`** (top right) and select `Nuvio-v0.4.13-Enhanced.ipa`.
+- In **LiveContainer**, tap **`+`** (top right) and select `Nuvio-v0.4.14-Enhanced.ipa`.
 
 #### 2. SideStore
 - Tap [**Add to SideStore**](https://altdirect.app/?url=https%3A%2F%2Fraw.githubusercontent.com%2Filluminati945%2FNuvioMobile-iOS%2Fmain%2FNuvioEnhanced.json&r=sidestore), or add the source URL manually in **Sources ➔ `+`**:
@@ -41,7 +41,9 @@
 
 ### ✨ Features
 
-- ⚡ **Continuous Background Downloads**: Downloads continue while backgrounded or locked with local push alerts and Live Activities.
+- 🪟 **Liquid Glass Tab Bar**: Translucent Apple see-through floating tab bar with spring morphing, gesture drag bridging, and long-press profile switcher.
+- 📜 **Auto-Hide on Scroll & Hero Overscroll**: Fluid scroll-responsive navigation and elastic rubber-band pull-down physics.
+- ⚡ **Continuous Background Downloads**: Downloads continue while backgrounded or locked with audio keep-alive, local push alerts, and Live Activities.
 - 📂 **iOS Files App Access**: Downloaded files are saved to `Documents/nuvio_downloads` for direct access in **Files > On My iPhone > Nuvio Enhanced**.
 - 📺 **Live TV & EPG**: Fast M3U streaming and XMLTV program guide.
 - 🎬 **Custom MPV Player**: Tap-to-seek, custom subtitle fonts, language groupings, and seamless audio track switching.
