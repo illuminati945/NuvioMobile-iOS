@@ -1253,6 +1253,7 @@ struct ComposeView: UIViewControllerRepresentable {
         // Ensure coordinators and notification center are active even in LiveContainer
         OrientationLockCoordinator.shared.start()
         DownloadsLiveActivityManager.shared.start()
+        DownloadsBackgroundKeepAlive.shared.start()
         
         let center = UNUserNotificationCenter.current()
         center.requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
