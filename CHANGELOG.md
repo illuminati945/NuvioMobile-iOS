@@ -3,6 +3,20 @@
 All notable Nuvio Enhanced changes are recorded here. GitHub release notes use the
 same user-facing summary so the in-app updater can display it before download.
 
+## 0.4.13 - 2026-08-25
+
+### Added & Fixed
+
+- **Indefinite Background Downloads**: Implemented silent audio background session keep-alive (`AVAudioSession` + `AVAudioPlayer` loop on `AVAudioSessionCategoryOptionMixWithOthers`), bypassing iOS 30-second background timeouts and keeping multi-gigabyte downloads active while the device is locked or when switching between apps.
+- **Native Folder Picker for iOS**: Integrated interactive `UIDocumentPickerViewController` into Download Location settings, allowing users to choose custom storage directories (iCloud Drive, external folders, or local Files) with persistent security-scoped bookmarks.
+- **Instant Files App Discovery**: Initialized directory indexing with a `.keep` placeholder file inside `Documents/nuvio_downloads/` so the "Nuvio Enhanced" folder appears immediately in the system Files app under "On My iPhone".
+- **LiveContainer Notification & Haptic Bypass**: Added explicit `UNUserNotificationCenter` permission requests, foreground presentation delegates, and physical haptic/chime fallbacks (`UINotificationFeedbackGenerator` & `AudioServicesPlaySystemSound`) for reliable completion and error alerts inside LiveContainer and SideStore sandboxes.
+- **Startup Coordinator Initialization**: Ensured `OrientationLockCoordinator` and `DownloadsLiveActivityManager` start directly during root view initialization.
+
+### Release
+
+- Versioned as Nuvio Enhanced `0.4.13 (117)`.
+
 ## 0.4.12 - 2026-08-24
 
 ### Added

@@ -1250,6 +1250,17 @@ struct ComposeView: UIViewControllerRepresentable {
         // Register MPV player bridge before Compose initializes
         NuvioPlayerRegistration.register()
         
+        // Ensure coordinators and notification center are active even in LiveContainer
+        OrientationLockCoordinator.shared.start()
+        DownloadsLiveActivityManager.shared.start()
+        
+        let center = UNUserNotificationCenter.current()
+        center.requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+            if let error = error {
+                print("[Nuvio] Notification authorization error: \(error.localizedDescription)")
+            }
+        }
+        
         let controller = MainViewControllerKt.MainViewController()
         controller.view.backgroundColor = UIColor(red: 0.008, green: 0.016, blue: 0.016, alpha: 1.0)
         return RootComposeViewController(contentController: controller)

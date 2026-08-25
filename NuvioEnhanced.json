@@ -21,11 +21,11 @@
       "category": "entertainment",
       "versions": [
         {
-          "version": "0.4.12",
-          "buildVersion": "116",
-          "date": "2026-08-24T22:15:00Z",
-          "localizedDescription": "# 🚀 Nuvio Enhanced iOS v0.4.12\n\n- Restored Downloads Location and Storage settings for iOS\n- Native iOS Files app integration (Documents / nuvio_downloads)\n- Continuous background downloads with extended execution time\n- Local completion & failure push notifications\n- Dynamic Island / Live Activities download monitoring\n- UIViewLayoutRegion runtime stability fix",
-          "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.12/Nuvio-v0.4.12-Enhanced.ipa",
+          "version": "0.4.13",
+          "buildVersion": "117",
+          "date": "2026-08-25T05:45:00Z",
+          "localizedDescription": "# 🚀 Nuvio Enhanced iOS v0.4.13\n\n- Indefinite background downloads via background audio keep-alive\n- Native interactive iOS folder picker (UIDocumentPickerViewController)\n- Reliable local notifications, haptics & audio chimes for LiveContainer & SideStore\n- Immediate Files app discovery (.keep file initialization)\n- Startup coordinators & notification center activation",
+          "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.13/Nuvio-v0.4.13-Enhanced.ipa",
           "size": 61296443,
           "minOSVersion": "16.0"
         }

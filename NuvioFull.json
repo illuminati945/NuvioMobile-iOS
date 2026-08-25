@@ -21,11 +21,11 @@
       "category": "entertainment",
       "versions": [
         {
-          "version": "0.4.12",
-          "buildVersion": "116",
-          "date": "2026-08-24T22:15:00Z",
-          "localizedDescription": "# 🚀 Nuvio Full iOS v0.4.12\n\nFull official build for iOS and iPadOS with sideload support, background downloads, notification support, and Files app access.",
-          "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.12/Nuvio-v0.4.12-Full.ipa",
+          "version": "0.4.13",
+          "buildVersion": "117",
+          "date": "2026-08-25T05:45:00Z",
+          "localizedDescription": "# 🚀 Nuvio Full iOS v0.4.13\n\nFull official build for iOS and iPadOS with sideload support, indefinite background downloads, notification support, and Files app access.",
+          "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.13/Nuvio-v0.4.13-Full.ipa",
           "size": 61296443,
           "minOSVersion": "16.0"
         }

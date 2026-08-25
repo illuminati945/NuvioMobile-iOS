@@ -1,9 +1,12 @@
 package com.nuvio.app.features.downloads
 
 import com.nuvio.app.features.streams.StreamSubtitle
-import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.convert
+import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -20,12 +23,17 @@ import nuvio.composeapp.generated.resources.downloads_error_partial_file_not_ope
 import nuvio.composeapp.generated.resources.downloads_error_write_partial_file_failed
 import nuvio.composeapp.generated.resources.network_request_failed_http
 import org.jetbrains.compose.resources.getString
-import platform.Foundation.NSError
-import platform.Foundation.NSDate
+import platform.AVFAudio.AVAudioPlayer
+import platform.AVFAudio.AVAudioSession
+import platform.AVFAudio.AVAudioSessionCategoryOptionMixWithOthers
+import platform.AVFAudio.AVAudioSessionCategoryPlayback
+import platform.AVFAudio.AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation
+import platform.AudioToolbox.AudioServicesPlaySystemSound
 import platform.Foundation.NSData
+import platform.Foundation.NSDate
+import platform.Foundation.NSError
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSHTTPURLResponse
-import platform.Foundation.NSHomeDirectory
 import platform.Foundation.NSMutableURLRequest
 import platform.Foundation.NSOperationQueue
 import platform.Foundation.NSURL
@@ -38,26 +46,25 @@ import platform.Foundation.NSURLSessionDataTask
 import platform.Foundation.NSURLSessionTask
 import platform.Foundation.setHTTPMethod
 import platform.Foundation.setValue
-import platform.UIKit.UIApplication
 import platform.Foundation.timeIntervalSince1970
-import platform.darwin.NSObject
-import platform.posix.FILE
-import platform.posix.fclose
-import platform.posix.fflush
-import platform.posix.fopen
-import platform.posix.fwrite
-
+import platform.UIKit.UIApplication
+import platform.UIKit.UIBackgroundTaskIdentifier
+import platform.UIKit.UIBackgroundTaskInvalid
+import platform.UIKit.UINotificationFeedbackGenerator
+import platform.UIKit.UINotificationFeedbackType
 import platform.UserNotifications.UNMutableNotificationContent
 import platform.UserNotifications.UNNotificationRequest
 import platform.UserNotifications.UNNotificationSound
 import platform.UserNotifications.UNTimeIntervalNotificationTrigger
 import platform.UserNotifications.UNUserNotificationCenter
-import platform.UIKit.UIBackgroundTaskIdentifier
-import platform.UIKit.UIBackgroundTaskInvalid
+import platform.darwin.NSObject
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
-import platform.darwin.dispatch_sync
-import platform.Foundation.NSThread
+import platform.posix.FILE
+import platform.posix.fclose
+import platform.posix.fflush
+import platform.posix.fopen
+import platform.posix.fwrite
 
 private const val DOWNLOAD_REQUEST_TIMEOUT_SECONDS = 60.0
 private const val DOWNLOAD_RESOURCE_TIMEOUT_SECONDS = 24.0 * 60.0 * 60.0
@@ -74,24 +81,144 @@ fun handleDownloadsBackgroundEvents(
 }
 
 fun pauseDownloadsForAppBackground() {
-    // Keep downloads running continuously in background
+    // Continuous background downloading active via audio keep-alive
 }
 
-private fun postLocalDownloadNotification(title: String, body: String) {
-    runCatching {
-        val content = UNMutableNotificationContent().apply {
-            setTitle(title)
-            setBody(body)
-            setSound(UNNotificationSound.defaultSound())
+@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
+private object DownloadsBackgroundKeepAlive {
+    private var activeCount = 0
+    private var player: AVAudioPlayer? = null
+    private var silentData: NSData? = null
+
+    private fun getOrCreateSilentData(): NSData {
+        silentData?.let { return it }
+        val sampleRate = 8000
+        val numSamples = sampleRate
+        val dataSize = numSamples
+        val totalSize = 36 + dataSize
+        val wav = ByteArray(44 + dataSize)
+
+        // RIFF
+        wav[0] = 'R'.code.toByte(); wav[1] = 'I'.code.toByte(); wav[2] = 'F'.code.toByte(); wav[3] = 'F'.code.toByte()
+        wav[4] = (totalSize and 0xff).toByte()
+        wav[5] = ((totalSize shr 8) and 0xff).toByte()
+        wav[6] = ((totalSize shr 16) and 0xff).toByte()
+        wav[7] = ((totalSize shr 24) and 0xff).toByte()
+
+        // WAVE
+        wav[8] = 'W'.code.toByte(); wav[9] = 'A'.code.toByte(); wav[10] = 'V'.code.toByte(); wav[11] = 'E'.code.toByte()
+
+        // fmt 
+        wav[12] = 'f'.code.toByte(); wav[13] = 'm'.code.toByte(); wav[14] = 't'.code.toByte(); wav[15] = ' '.code.toByte()
+        wav[16] = 16; wav[17] = 0; wav[18] = 0; wav[19] = 0
+        wav[20] = 1; wav[21] = 0 // PCM
+        wav[22] = 1; wav[23] = 0 // Mono
+        wav[24] = (sampleRate and 0xff).toByte()
+        wav[25] = ((sampleRate shr 8) and 0xff).toByte()
+        wav[26] = 0; wav[27] = 0
+        wav[28] = (sampleRate and 0xff).toByte()
+        wav[29] = ((sampleRate shr 8) and 0xff).toByte()
+        wav[30] = 0; wav[31] = 0
+        wav[32] = 1; wav[33] = 0
+        wav[34] = 8; wav[35] = 0
+
+        // data
+        wav[36] = 'd'.code.toByte(); wav[37] = 'a'.code.toByte(); wav[38] = 't'.code.toByte(); wav[39] = 'a'.code.toByte()
+        wav[40] = (dataSize and 0xff).toByte()
+        wav[41] = ((dataSize shr 8) and 0xff).toByte()
+        wav[42] = ((dataSize shr 16) and 0xff).toByte()
+        wav[43] = ((dataSize shr 24) and 0xff).toByte()
+
+        for (i in 44 until wav.size) {
+            wav[i] = 128.toByte()
         }
-        val trigger = UNTimeIntervalNotificationTrigger.triggerWithTimeInterval(0.1, repeats = false)
-        val identifier = "nuvio.download.${NSDate().timeIntervalSince1970}"
-        val request = UNNotificationRequest.requestWithIdentifier(
-            identifier = identifier,
-            content = content,
-            trigger = trigger,
-        )
-        UNUserNotificationCenter.currentNotificationCenter().addNotificationRequest(request, null)
+
+        val data = wav.usePinned { pinned ->
+            NSData.dataWithBytes(pinned.addressOf(0), wav.size.convert())
+        }
+        silentData = data
+        return data
+    }
+
+    fun increment() {
+        dispatch_async(dispatch_get_main_queue()) {
+            activeCount++
+            if (activeCount == 1) {
+                startSilentPlayback()
+            }
+        }
+    }
+
+    fun decrement() {
+        dispatch_async(dispatch_get_main_queue()) {
+            activeCount = (activeCount - 1).coerceAtLeast(0)
+            if (activeCount == 0) {
+                stopSilentPlayback()
+            }
+        }
+    }
+
+    private fun startSilentPlayback() {
+        runCatching {
+            val audioSession = AVAudioSession.sharedInstance()
+            audioSession.setCategory(
+                category = AVAudioSessionCategoryPlayback,
+                withOptions = AVAudioSessionCategoryOptionMixWithOthers,
+                error = null,
+            )
+            audioSession.setActive(true, error = null)
+
+            val data = getOrCreateSilentData()
+            val audioPlayer = AVAudioPlayer(data = data, error = null)
+            audioPlayer.numberOfLoops = -1
+            audioPlayer.volume = 0.0f
+            audioPlayer.prepareToPlay()
+            audioPlayer.play()
+            player = audioPlayer
+        }
+    }
+
+    private fun stopSilentPlayback() {
+        runCatching {
+            player?.stop()
+            player = null
+            val audioSession = AVAudioSession.sharedInstance()
+            audioSession.setActive(
+                active = false,
+                withOptions = AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation,
+                error = null,
+            )
+        }
+    }
+}
+
+private fun postLocalDownloadNotification(title: String, body: String, isSuccess: Boolean) {
+    dispatch_async(dispatch_get_main_queue()) {
+        runCatching {
+            val generator = UINotificationFeedbackGenerator()
+            generator.prepare()
+            if (isSuccess) {
+                generator.notificationOccurred(UINotificationFeedbackType.UINotificationFeedbackTypeSuccess)
+                AudioServicesPlaySystemSound(1007u)
+            } else {
+                generator.notificationOccurred(UINotificationFeedbackType.UINotificationFeedbackTypeError)
+                AudioServicesPlaySystemSound(1073u)
+            }
+
+            val content = UNMutableNotificationContent().apply {
+                setTitle(title)
+                setBody(body)
+                setSound(UNNotificationSound.defaultSound())
+            }
+            val trigger = UNTimeIntervalNotificationTrigger.triggerWithTimeInterval(0.1, repeats = false)
+            val identifier = "nuvio.download.${NSDate().timeIntervalSince1970}"
+            val request = UNNotificationRequest.requestWithIdentifier(
+                identifier = identifier,
+                content = content,
+                trigger = trigger,
+            )
+            UNUserNotificationCenter.currentNotificationCenter().addNotificationRequest(request, null)
+        }
     }
 }
 
@@ -107,21 +234,18 @@ internal actual object DownloadsPlatformDownloader {
         val scope = CoroutineScope(job + Dispatchers.Default)
         val handle = IosDownloadsTaskHandle(job)
 
+        DownloadsBackgroundKeepAlive.increment()
+
         scope.launch {
             val downloadsDirectory = downloadsDirectoryPath()
             val destinationPath = "$downloadsDirectory/${request.destinationFileName}"
             val tempPath = "$downloadsDirectory/${request.destinationFileName}.part"
             var bgTaskId: UIBackgroundTaskIdentifier = UIBackgroundTaskInvalid
 
-            runCatching {
-                if (NSThread.isMainThread) {
+            dispatch_async(dispatch_get_main_queue()) {
+                runCatching {
                     bgTaskId = UIApplication.sharedApplication.beginBackgroundTaskWithName("NuvioDownload_${request.destinationFileName}") {
-                        UIApplication.sharedApplication.endBackgroundTask(bgTaskId)
-                        bgTaskId = UIBackgroundTaskInvalid
-                    }
-                } else {
-                    dispatch_sync(dispatch_get_main_queue()) {
-                        bgTaskId = UIApplication.sharedApplication.beginBackgroundTaskWithName("NuvioDownload_${request.destinationFileName}") {
+                        if (bgTaskId != UIBackgroundTaskInvalid) {
                             UIApplication.sharedApplication.endBackgroundTask(bgTaskId)
                             bgTaskId = UIBackgroundTaskInvalid
                         }
@@ -182,14 +306,15 @@ internal actual object DownloadsPlatformDownloader {
                 val localFileUri = NSURL.fileURLWithPath(destinationPath).absoluteString ?: "file://$destinationPath"
                 val finalSize = fileSizeOrNull(destinationPath)
                 onSuccess(localFileUri, totalBytes ?: finalSize)
-                postLocalDownloadNotification("Download Complete", request.destinationFileName)
+                postLocalDownloadNotification("Download Complete", request.destinationFileName, isSuccess = true)
             } catch (_: CancellationException) {
                 handle.cancelNativeTask()
             } catch (error: Throwable) {
                 val errorMsg = error.message ?: runBlocking { getString(Res.string.download_failed) }
                 onFailure(errorMsg)
-                postLocalDownloadNotification("Download Failed", errorMsg)
+                postLocalDownloadNotification("Download Failed", errorMsg, isSuccess = false)
             } finally {
+                DownloadsBackgroundKeepAlive.decrement()
                 if (bgTaskId != UIBackgroundTaskInvalid) {
                     val taskIdToEnd = bgTaskId
                     bgTaskId = UIBackgroundTaskInvalid
@@ -520,15 +645,17 @@ private fun NSURLResponse?.toDownloadResult(): IosDownloadResult {
 
 @OptIn(ExperimentalForeignApi::class)
 private fun downloadsDirectoryPath(): String {
-    val root = NSHomeDirectory().trimEnd('/')
-    val path = "$root/Documents/nuvio_downloads"
-    NSFileManager.defaultManager.createDirectoryAtPath(
-        path = path,
-        withIntermediateDirectories = true,
-        attributes = null,
-        error = null,
-    )
-    return path
+    val selected = DownloadsExternalFolderPlatform.selectedFolderUri()?.toLocalPath()
+    if (!selected.isNullOrBlank()) {
+        NSFileManager.defaultManager.createDirectoryAtPath(
+            path = selected,
+            withIntermediateDirectories = true,
+            attributes = null,
+            error = null,
+        )
+        return selected
+    }
+    return DownloadsExternalFolderPlatform.defaultDownloadsPath
 }
 
 @OptIn(ExperimentalForeignApi::class)
