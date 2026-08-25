@@ -26,7 +26,7 @@
           "date": "2026-08-25T17:15:00Z",
           "localizedDescription": "# 🚀 Nuvio Enhanced iOS v0.4.15\n\n- Fix navigation bar jumping/bouncing glitch when switching tabs\n- Apple Liquid Glass frosted translucent floating tab bar with specular border highlight and glow\n- Tab-switch layout lock to eliminate unwanted vertical menu bar shifts\n- Stable fixed container height with spring physics indicator\n- Default Liquid Glass enabled out-of-the-box",
           "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.15/Nuvio-v0.4.15-Enhanced.ipa",
-          "size": 61304565,
+          "size": 61310788,
           "minOSVersion": "16.0"
         }
       ]
