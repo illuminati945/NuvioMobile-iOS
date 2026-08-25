@@ -34,7 +34,7 @@ private struct TabBarItemFramePreferenceKey: PreferenceKey {
     }
 }
 
-@available(iOS 26.0, *)
+@available(iOS 16.0, *)
 struct NuvioGlassTabBar: View {
     @ObservedObject var appCoordinator: AppNavigationCoordinator
     @ObservedObject var iconStore: NativeTabIconStore
@@ -45,14 +45,10 @@ struct NuvioGlassTabBar: View {
     @State private var dragTargetTab: NuvioAppTab? = nil
     @State private var isDragging: Bool = false
     @State private var dragTransitionToken = UUID()
-    @Namespace private var glassNamespace
     @Environment(\.verticalSizeClass) private var verticalSizeClass
 
     @State private var selectionFeedback = UISelectionFeedbackGenerator()
     @State private var impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-
-    private static let barGlassID = "nuvio.tabbar"
-    private static let pillUnionID = "nuvio.tabbar.pillUnion"
 
     private static let barHorizontalPadding: CGFloat = 6
     private static let barVerticalPadding: CGFloat = 5
@@ -104,12 +100,15 @@ struct NuvioGlassTabBar: View {
         let heightMultiplier = isBridging ? Self.bridgeHeightMultiplier : 1.0
 
         Capsule()
-            .fill(tinted ? Color(uiColor: iconStore.accentColor).opacity(0.12) : Color.white.opacity(0.001))
-            .glassEffect(.regular.interactive(), in: Capsule())
+            .fill(tinted ? Color(uiColor: iconStore.accentColor).opacity(0.20) : Color.white.opacity(0.12))
+            .background(.ultraThinMaterial, in: Capsule())
+            .overlay(
+                Capsule()
+                    .strokeBorder(Color.white.opacity(0.25), lineWidth: 0.5)
+            )
             .frame(width: frame.width, height: frame.height)
             .scaleEffect(x: 1, y: heightMultiplier, anchor: .center)
             .offset(x: frame.minX, y: frame.minY)
-            .glassEffectUnion(id: Self.pillUnionID, namespace: glassNamespace)
     }
 
     @ViewBuilder
@@ -140,44 +139,46 @@ struct NuvioGlassTabBar: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            GlassEffectContainer(spacing: 0) {
-                HStack(spacing: 0) {
-                    ForEach(visibleTabs, id: \.self) { tab in
-                        item(for: tab)
-                    }
+            HStack(spacing: 0) {
+                ForEach(visibleTabs, id: \.self) { tab in
+                    item(for: tab)
                 }
-                .coordinateSpace(name: "tabBar")
-                .background(alignment: .topLeading) {
-                    if isExpanded {
-                        settledPill
-                    }
+            }
+            .coordinateSpace(name: "tabBar")
+            .background(alignment: .topLeading) {
+                if isExpanded {
+                    settledPill
                 }
-                .onPreferenceChange(TabBarItemFramePreferenceKey.self) { values in
-                    let newFrames = Dictionary(values.map { ($0.tab, $0.rect) }, uniquingKeysWith: { $1 })
-                    if tabItemFrames.isEmpty {
-                        var transaction = Transaction()
-                        transaction.disablesAnimations = true
-                        withTransaction(transaction) {
-                            tabItemFrames = newFrames
-                        }
-                    } else {
+            }
+            .onPreferenceChange(TabBarItemFramePreferenceKey.self) { values in
+                let newFrames = Dictionary(values.map { ($0.tab, $0.rect) }, uniquingKeysWith: { $1 })
+                if tabItemFrames.isEmpty {
+                    var transaction = Transaction()
+                    transaction.disablesAnimations = true
+                    withTransaction(transaction) {
                         tabItemFrames = newFrames
                     }
+                } else {
+                    tabItemFrames = newFrames
                 }
-                .contentShape(Rectangle())
-                .highPriorityGesture(dragSelectionGesture(), including: .all)
-                .padding(.horizontal, Self.barHorizontalPadding)
-                .padding(.vertical, Self.barVerticalPadding)
-                .glassEffect(.clear.interactive(), in: Capsule())
-                .glassEffectID(Self.barGlassID, in: glassNamespace)
             }
+            .contentShape(Rectangle())
+            .highPriorityGesture(dragSelectionGesture(), including: .all)
+            .padding(.horizontal, Self.barHorizontalPadding)
+            .padding(.vertical, Self.barVerticalPadding)
+            .background(.ultraThinMaterial, in: Capsule())
+            .overlay(
+                Capsule()
+                    .strokeBorder(Color.white.opacity(0.18), lineWidth: 0.5)
+            )
+            .shadow(color: Color.black.opacity(0.35), radius: 16, x: 0, y: 8)
 
             if isExpanded, isBridging,
                let source = dragSourceTab, let target = dragTargetTab,
                let sourceFrame = tabItemFrames[source], let targetFrame = tabItemFrames[target] {
                 let extendedSource = extendedTowards(sourceFrame, other: targetFrame, by: Self.bridgeOverlap)
                 let extendedTarget = extendedTowards(targetFrame, other: sourceFrame, by: Self.bridgeOverlap)
-                GlassEffectContainer(spacing: 0) {
+                ZStack(alignment: .topLeading) {
                     glassPill(frame: translatedToOuterLayer(extendedSource), tinted: false)
                     glassPill(frame: translatedToOuterLayer(extendedTarget), tinted: false)
                 }
@@ -356,7 +357,7 @@ struct NuvioGlassTabBar: View {
     }
 }
 
-@available(iOS 26.0, *)
+@available(iOS 16.0, *)
 private extension View {
     func legibleOverGlass(enabled: Bool) -> some View {
         shadow(color: .black.opacity(enabled ? 0.35 : 0), radius: 2, x: 0, y: 0)
