@@ -389,6 +389,7 @@ fun LibraryScreen(
             modifier = Modifier.fillMaxSize(),
             horizontalPadding = 0.dp,
             listState = listState,
+            autoHidesNativeTabBar = true,
         ) {
             stickyHeader {
                 Box(modifier = Modifier.fillMaxWidth()) {

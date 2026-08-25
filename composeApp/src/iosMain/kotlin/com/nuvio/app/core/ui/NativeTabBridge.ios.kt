@@ -23,7 +23,7 @@ private const val nativeTabChromeDidChangeNotification = "NuvioNativeTabChromeDi
 
 internal actual fun isLiquidGlassNativeTabBarSupported(): Boolean {
     return UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPhone &&
-        (UIDevice.currentDevice.systemVersion.substringBefore(".").toIntOrNull() ?: 0) >= 26
+        (UIDevice.currentDevice.systemVersion.substringBefore(".").toIntOrNull() ?: 0) >= 16
 }
 
 internal actual fun publishLiquidGlassNativeTabBarEnabled(enabled: Boolean) {

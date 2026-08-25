@@ -1151,6 +1151,7 @@ fun HomeScreen(
                 topPadding = if (showHeroSlot) 0.dp else null,
                 backgroundColor = Color.Transparent,
                 listState = homeListState,
+                autoHidesNativeTabBar = true,
             ) {
                 if (showHeroSlot) {
                     item {

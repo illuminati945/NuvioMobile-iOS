@@ -704,6 +704,7 @@ private fun MobileSettingsScreen(
         NuvioScreen(
             modifier = Modifier.nestedScroll(rootSearchRevealConnection),
             listState = listState,
+            autoHidesNativeTabBar = page == SettingsPage.Root,
         ) {
             if (showInternalHeader) {
                 stickyHeader {
