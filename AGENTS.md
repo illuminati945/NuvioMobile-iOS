@@ -1,14 +1,12 @@
-# Nuvio Enhanced iOS — Agent Instructions & Workflow Guide
+# Nuvio Enhanced iOS — Agent Instructions & Architecture Guide
 
-This document contains mandatory operational rules, secrets, architecture guidelines, and procedures for any AI assistant or developer working on this codebase across sessions.
+This document contains operational workflows, build instructions, and iOS architecture guidelines for developing and maintaining the Nuvio Enhanced iOS codebase.
 
 ---
 
-## 1. 🔑 Repository, Credentials & Branch Strategy
+## 1. 🌿 Repository & Branch Strategy
 
 - **Repository**: `https://github.com/illuminati945/NuvioMobile-iOS`
-- **GitHub Username**: `illuminati945`
-- **GitHub PAT Token**: Stored in environment / user context 
 - **Primary Working Branches**:
   - `main`: Tracks primary stable state and SideStore manifests.
   - `enhanced`: Active development and CI build target.
@@ -22,40 +20,33 @@ This document contains mandatory operational rules, secrets, architecture guidel
 
 ---
 
-## 2. 📢 Discord Webhook & Reporting Protocols
+## 2. 📢 Discord CI/CD Tracking & Notifications
 
-There are **two distinct Discord webhooks** with strict formatting and lifecycle rules:
+CI/CD builds are monitored with live Discord updates:
 
-### Channel A: Detailed Live CI/CD Tracker
-- **Webhook URL**: `Stored securely in local environment / secret manager (Channel A Webhook)`
-- **Behavior**:
-  - Posts initial message when compilation begins.
-  - Updates progress, current step, and elapsed time every 30 seconds via `PATCH /messages/{msg_id}`.
-  - Sends a standalone **heartbeat message every 15 minutes**.
-  - Always includes the direct GitHub Actions run link.
-  - Edits the embed to green on success or red on failure with release links.
+### Channel A: Live CI/CD Tracker
+- Posts compilation progress, current step, and elapsed time every 30 seconds.
+- Standalone heartbeat message sent every 15 minutes.
+- Edits embed to green on success or red on failure with release links.
 
-### Channel B: High-Level Announcements & Updates Channel
-- **Webhook URL**: `Stored securely in local environment / secret manager (Channel B Webhook)`
-- **Behavior**:
-  - When build starts: Posts an announcement containing the **complete changelog for the version**, the start timestamp, and the compilation link.
-  - When release finishes: **Edits the same message (via `PATCH /messages/{msg_id}`)** to mark it `Released`, providing the direct `.ipa` download link, release tag, SideStore source URL, total build time, and changelog.
+### Channel B: High-Level Announcements
+- Posts release announcements containing version changelogs and build status.
+- Updates on completion with direct `.ipa` download links, release tags, and SideStore source URLs.
 
 ### Background Watcher Daemon
-Always run the background watcher script during CI runs:
+Run the background watcher daemon during CI builds:
 ```bash
-python3 /home/ubuntu/.gemini/antigravity-cli/brain/b9d69cc5-7785-4024-bff0-feac8ab3b824/scratch/discord_watcher.py <RUN_ID>
+python3 discord_watcher.py <RUN_ID>
 ```
 
 ---
 
 ## 3. 🚀 Triggering Automated CI/CD Builds
 
-Trigger a new Apple Silicon macOS build via the GitHub REST API:
+Trigger a new Apple Silicon macOS build via GitHub Actions workflow dispatch:
 ```python
 import urllib.request, json
 
-# Use the token from active context
 headers = {
     'Authorization': f'Bearer {token}',
     'Accept': 'application/vnd.github+json',
