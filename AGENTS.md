@@ -27,7 +27,7 @@ This document contains mandatory operational rules, secrets, architecture guidel
 There are **two distinct Discord webhooks** with strict formatting and lifecycle rules:
 
 ### Channel A: Detailed Live CI/CD Tracker
-- **Webhook URL**: `<CHANNEL_A_WEBHOOK>`
+- **Webhook URL**: `Stored securely in local environment / secret manager (Channel A Webhook)`
 - **Behavior**:
   - Posts initial message when compilation begins.
   - Updates progress, current step, and elapsed time every 30 seconds via `PATCH /messages/{msg_id}`.
@@ -36,7 +36,7 @@ There are **two distinct Discord webhooks** with strict formatting and lifecycle
   - Edits the embed to green on success or red on failure with release links.
 
 ### Channel B: High-Level Announcements & Updates Channel
-- **Webhook URL**: `<CHANNEL_B_WEBHOOK>`
+- **Webhook URL**: `Stored securely in local environment / secret manager (Channel B Webhook)`
 - **Behavior**:
   - When build starts: Posts an announcement containing the **complete changelog for the version**, the start timestamp, and the compilation link.
   - When release finishes: **Edits the same message (via `PATCH /messages/{msg_id}`)** to mark it `Released`, providing the direct `.ipa` download link, release tag, SideStore source URL, total build time, and changelog.
