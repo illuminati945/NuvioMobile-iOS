@@ -22,11 +22,11 @@
       "versions": [
         {
           "version": "0.4.16",
-          "buildVersion": "120",
-          "date": "2026-08-25T19:57:00Z",
-          "localizedDescription": "# 🚀 Nuvio Enhanced iOS v0.4.16\n\n- Full iOS Edge-Swipe Back Gesture support across all secondary pages, settings subpages, detail screens, stream views, catalogs, and collections\n- Interactive drag physics with spring dismissal and backdrop scrim fade\n- Left-edge depth shadow cues and haptic feedback on dismissal threshold\n- Liquid Glass floating navigation bar stability enhancements",
+          "buildVersion": "115",
+          "date": "2026-08-25T21:03:57Z",
+          "localizedDescription": "# \ud83d\ude80 Nuvio Enhanced iOS v0.4.16\n\n- Latest upstream enhancements & fixes\n- SideStore and AltStore community source support\n- Automated GitHub Actions compilation\n- Live TV and M3U EPG integration\n- Subtitle styling and language grouping\n- Performance and memory stability improvements",
           "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.16/Nuvio-v0.4.16-Enhanced.ipa",
-          "size": 61310788,
+          "size": 61332307,
           "minOSVersion": "16.0"
         }
       ]
