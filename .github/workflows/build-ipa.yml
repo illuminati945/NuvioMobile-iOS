@@ -195,9 +195,11 @@ jobs:
           EOF
 
           cat >> gradle.properties << 'EOF'
-          kotlin.native.cacheKind=none
-          kotlin.native.cacheKind.iosArm64=none
-          kotlin.native.cacheKind.iosSimulatorArm64=none
+          org.gradle.parallel=true
+          org.gradle.caching=true
+          org.gradle.vfs.watch=true
+          kotlin.incremental=true
+          kotlin.incremental.native=true
           EOF
 
       - name: Restore iOS build caches
@@ -207,12 +209,16 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
+            ~/.gradle/daemon
             ~/.konan
             ~/Library/Caches/org.swift.swiftpm
+            ~/Library/Caches/com.apple.dt.Xcode
             iosApp/build/SourcePackages
-          key: ${{ runner.os }}-ios-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'MPVKit/Package.swift', 'iosApp/iosApp.xcodeproj/project.pbxproj') }}
+            iosApp/build/Build/Products
+          key: ${{ runner.os }}-ios-v2-${{ hashFiles('gradle/libs.versions.toml', '**/gradle-wrapper.properties', 'MPVKit/Package.swift') }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-ios-
+            ${{ runner.os }}-ios-v2-${{ hashFiles('gradle/libs.versions.toml', '**/gradle-wrapper.properties', 'MPVKit/Package.swift') }}-
+            ${{ runner.os }}-ios-v2-
 
       - name: Build iOS App via Xcode
         run: |
@@ -224,21 +230,28 @@ jobs:
             -sdk iphoneos \
             -destination "generic/platform=iOS" \
             -derivedDataPath build \
+            -jobs 4 \
+            -parallelizeTargets \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            SWIFT_COMPILATION_MODE=wholemodule \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             build
 
       - name: Save iOS build caches
-        if: always() && steps.ios-cache.outputs.cache-hit != 'true'
+        if: always()
         uses: actions/cache/save@v4
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
+            ~/.gradle/daemon
             ~/.konan
             ~/Library/Caches/org.swift.swiftpm
+            ~/Library/Caches/com.apple.dt.Xcode
             iosApp/build/SourcePackages
+            iosApp/build/Build/Products
           key: ${{ steps.ios-cache.outputs.cache-primary-key }}
 
       - name: Set artifact suffix
