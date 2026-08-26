@@ -113,9 +113,9 @@ When fixing bugs or adding new features, follow this exact sequence:
 
 ## 5. 🛡️ Critical iOS Architecture Rules
 
-### A. Non-Blocking Gesture & Touch Handling
-- **Rule**: Never use full-screen `pointerInput` on `PointerEventPass.Initial` (such as for swipe-to-dismiss or back gestures) because it steals touch events before child buttons, carousels, or lists can receive them.
-- **Solution**: Always use an isolated edge-strip detector (e.g. `24.dp` left edge) with `detectHorizontalDragGestures` and proper touch-slop handling (see `composeApp/src/commonMain/kotlin/com/nuvio/app/core/ui/SwipeBackGesture.kt`).
+### A. Clean Touch & Gesture Handling in Compose Multiplatform
+- **Rule**: In Compose Multiplatform for iOS (`ui-uikit`), never wrap top-level navigation routes or screen destinations with custom full-screen gesture recognizers or `pointerInput` overlays. Custom containers disrupt the UIKit-to-Compose hit-testing tree and intercept clicks from child buttons, carousels, and lists.
+- **Requirement**: Allow standard navigation destinations to render directly inside `entry<Route>` so that all touch events pass unobstructed to Compose controls.
 
 ### B. App Launch Overlay Auto-Dismiss Safety
 - In `composeApp/src/commonMain/kotlin/com/nuvio/app/App.kt`:
