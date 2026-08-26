@@ -58,11 +58,11 @@ fun IosSwipeBackContainer(
     var hapticFired by remember { mutableStateOf(false) }
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val widthPx = constraints.maxWidth.toFloat()
-        val dismissThreshold = widthPx * 0.30f
+        val screenWidthPx = with(density) { maxWidth.toPx() }
+        val dismissThreshold = screenWidthPx * 0.30f
 
         val currentOffset = offsetX.value
-        val progress = if (widthPx > 0f) (currentOffset / widthPx).coerceIn(0f, 1f) else 0f
+        val progress = if (screenWidthPx > 0f) (currentOffset / screenWidthPx).coerceIn(0f, 1f) else 0f
 
         Box(modifier = Modifier.fillMaxSize()) {
             if (currentOffset > 0f) {
@@ -106,9 +106,9 @@ fun IosSwipeBackContainer(
                 modifier = Modifier
                     .align(Alignment.CenterStart)
                     .fillMaxHeight()
-                    .width(if (isDragging) with(density) { constraints.maxWidth.toDp() } else edgeWidth)
-                    .pointerInput(enabled, widthPx) {
-                        if (!enabled || widthPx <= 0f) return@pointerInput
+                    .then(if (isDragging) Modifier.fillMaxWidth() else Modifier.width(edgeWidth))
+                    .pointerInput(enabled, screenWidthPx) {
+                        if (!enabled || screenWidthPx <= 0f) return@pointerInput
 
                         detectHorizontalDragGestures(
                             onDragStart = {
@@ -120,7 +120,7 @@ fun IosSwipeBackContainer(
                                 coroutineScope.launch {
                                     if (shouldDismiss) {
                                         offsetX.animateTo(
-                                            targetValue = widthPx,
+                                            targetValue = screenWidthPx,
                                             animationSpec = spring(
                                                 dampingRatio = Spring.DampingRatioLowBouncy,
                                                 stiffness = Spring.StiffnessMediumLow,
