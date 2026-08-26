@@ -22,11 +22,11 @@
       "versions": [
         {
           "version": "0.4.17",
-          "buildVersion": "121",
-          "date": "2026-08-26T06:30:00Z",
-          "localizedDescription": "# 🚀 Nuvio Enhanced iOS v0.4.17\n\n- Fix button clicks and touch responsiveness across all screens\n- Non-blocking edge-strip gesture detection for native iOS swipe-to-go-back\n- App launch overlay auto-dismiss safety fallback\n- Liquid Glass floating navigation bar stability enhancements",
+          "buildVersion": "115",
+          "date": "2026-08-26T07:41:52Z",
+          "localizedDescription": "# \ud83d\ude80 Nuvio Enhanced iOS v0.4.17\n\n- Latest upstream enhancements & fixes\n- SideStore and AltStore community source support\n- Automated GitHub Actions compilation\n- Live TV and M3U EPG integration\n- Subtitle styling and language grouping\n- Performance and memory stability improvements",
           "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.17/Nuvio-v0.4.17-Enhanced.ipa",
-          "size": 61332307,
+          "size": 61333887,
           "minOSVersion": "16.0"
         }
       ]
