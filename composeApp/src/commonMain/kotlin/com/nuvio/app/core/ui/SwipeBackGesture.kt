@@ -4,8 +4,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -23,20 +22,18 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
-import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 
 /**
  * An authentic iOS edge-swipe back container.
- * When [enabled] is true, swiping right from the left edge of the screen
+ * When [enabled] is true, swiping right from the leftmost edge of the screen
  * interactively slides the content right and invokes [onBack] when dismissed.
+ * Uses a dedicated bezel edge detector to ensure all buttons and interactions
+ * in [content] remain 100% responsive and unblocked.
  */
 @Composable
 fun IosSwipeBackContainer(
@@ -55,7 +52,7 @@ fun IosSwipeBackContainer(
     val coroutineScope = rememberCoroutineScope()
     val density = LocalDensity.current
     val haptic = LocalHapticFeedback.current
-    val edgeThresholdPx = with(density) { 44.dp.toPx() }
+    val edgeWidth = 24.dp
     val offsetX = remember { Animatable(0f) }
     var isDragging by remember { mutableStateOf(false) }
     var hapticFired by remember { mutableStateOf(false) }
@@ -64,92 +61,10 @@ fun IosSwipeBackContainer(
         val widthPx = constraints.maxWidth.toFloat()
         val dismissThreshold = widthPx * 0.30f
 
-        val gestureModifier = Modifier.pointerInput(enabled, widthPx) {
-            if (!enabled || widthPx <= 0f) return@pointerInput
-
-            awaitEachGesture {
-                val down = awaitFirstDown(pass = PointerEventPass.Initial)
-                if (down.position.x > edgeThresholdPx) return@awaitEachGesture
-
-                val velocityTracker = VelocityTracker()
-                velocityTracker.addPosition(down.uptimeMillis, down.position)
-
-                val pointerId = down.id
-                var totalDragX = 0f
-                var isHorizontalSwipe = false
-
-                while (true) {
-                    val event = awaitPointerEvent(pass = PointerEventPass.Initial)
-                    val change = event.changes.firstOrNull { it.id == pointerId } ?: break
-
-                    if (change.pressed) {
-                        velocityTracker.addPosition(change.uptimeMillis, change.position)
-                        val deltaX = change.positionChange().x
-                        val deltaY = change.positionChange().y
-
-                        if (!isHorizontalSwipe) {
-                            if (abs(deltaX) > abs(deltaY) && deltaX > 0) {
-                                isHorizontalSwipe = true
-                                isDragging = true
-                                change.consume()
-                            } else if (abs(deltaY) > abs(deltaX)) {
-                                break
-                            }
-                        }
-
-                        if (isHorizontalSwipe) {
-                            change.consume()
-                            totalDragX = (totalDragX + deltaX).coerceAtLeast(0f)
-
-                            coroutineScope.launch {
-                                offsetX.snapTo(totalDragX)
-                            }
-
-                            if (totalDragX >= dismissThreshold && !hapticFired) {
-                                hapticFired = true
-                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            } else if (totalDragX < dismissThreshold && hapticFired) {
-                                hapticFired = false
-                            }
-                        }
-                    } else {
-                        if (isHorizontalSwipe) {
-                            val velocity = velocityTracker.calculateVelocity().x
-                            val shouldDismiss = totalDragX >= dismissThreshold || velocity > 800f
-
-                            coroutineScope.launch {
-                                if (shouldDismiss) {
-                                    offsetX.animateTo(
-                                        targetValue = widthPx,
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioLowBouncy,
-                                            stiffness = Spring.StiffnessMediumLow,
-                                        ),
-                                    )
-                                    onBack()
-                                } else {
-                                    offsetX.animateTo(
-                                        targetValue = 0f,
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioNoBouncy,
-                                            stiffness = Spring.StiffnessMedium,
-                                        ),
-                                    )
-                                }
-                                isDragging = false
-                                hapticFired = false
-                            }
-                        }
-                        break
-                    }
-                }
-            }
-        }
-
         val currentOffset = offsetX.value
         val progress = if (widthPx > 0f) (currentOffset / widthPx).coerceIn(0f, 1f) else 0f
 
-        Box(modifier = Modifier.fillMaxSize().then(gestureModifier)) {
+        Box(modifier = Modifier.fillMaxSize()) {
             if (currentOffset > 0f) {
                 Box(
                     modifier = Modifier
@@ -185,6 +100,76 @@ fun IosSwipeBackContainer(
                     )
                 }
             }
+
+            // Dedicated left-edge touch strip
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .fillMaxHeight()
+                    .width(if (isDragging) with(density) { constraints.maxWidth.toDp() } else edgeWidth)
+                    .pointerInput(enabled, widthPx) {
+                        if (!enabled || widthPx <= 0f) return@pointerInput
+
+                        detectHorizontalDragGestures(
+                            onDragStart = {
+                                isDragging = true
+                                hapticFired = false
+                            },
+                            onDragEnd = {
+                                val shouldDismiss = offsetX.value >= dismissThreshold
+                                coroutineScope.launch {
+                                    if (shouldDismiss) {
+                                        offsetX.animateTo(
+                                            targetValue = widthPx,
+                                            animationSpec = spring(
+                                                dampingRatio = Spring.DampingRatioLowBouncy,
+                                                stiffness = Spring.StiffnessMediumLow,
+                                            ),
+                                        )
+                                        onBack()
+                                    } else {
+                                        offsetX.animateTo(
+                                            targetValue = 0f,
+                                            animationSpec = spring(
+                                                dampingRatio = Spring.DampingRatioNoBouncy,
+                                                stiffness = Spring.StiffnessMedium,
+                                            ),
+                                        )
+                                    }
+                                    isDragging = false
+                                    hapticFired = false
+                                }
+                            },
+                            onDragCancel = {
+                                coroutineScope.launch {
+                                    offsetX.animateTo(
+                                        targetValue = 0f,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioNoBouncy,
+                                            stiffness = Spring.StiffnessMedium,
+                                        ),
+                                    )
+                                    isDragging = false
+                                    hapticFired = false
+                                }
+                            },
+                            onHorizontalDrag = { change, dragAmount ->
+                                change.consume()
+                                val newOffset = (offsetX.value + dragAmount).coerceAtLeast(0f)
+                                coroutineScope.launch {
+                                    offsetX.snapTo(newOffset)
+                                }
+
+                                if (newOffset >= dismissThreshold && !hapticFired) {
+                                    hapticFired = true
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                } else if (newOffset < dismissThreshold && hapticFired) {
+                                    hapticFired = false
+                                }
+                            },
+                        )
+                    },
+            )
         }
     }
 }

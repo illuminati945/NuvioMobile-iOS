@@ -3,6 +3,18 @@
 All notable Nuvio Enhanced changes are recorded here. GitHub release notes use the
 same user-facing summary so the in-app updater can display it before download.
 
+## 0.4.17 - 2026-08-26
+
+### Fixed & Enhanced
+
+- **Button Click & Touch Responsiveness Fix**: Fixed an issue where button clicks and touches were intercepted by full-screen gesture listeners. Redesigned `IosSwipeBackContainer` to use an isolated leftmost bezel touch detector (`detectHorizontalDragGestures`) with automatic touch-slop handling.
+- **Launch Overlay Safety Fallback**: Added auto-dismiss timeout to ensure the app launch overlay never traps the user interface regardless of network state or catalog loading latency.
+- **Profile Switcher Overlay Mount Optimization**: Ensured native profile popup overlay is unmounted from composition when inactive.
+
+### Release
+
+- Versioned as Nuvio Enhanced `0.4.17 (121)`.
+
 ## 0.4.16 - 2026-08-25
 
 ### Added & Enhanced

@@ -949,6 +949,12 @@ private fun MainAppContent(
     var initialHomeReady by rememberSaveable(ownsAppRuntime) {
         mutableStateOf(!ownsAppRuntime)
     }
+    LaunchedEffect(initialHomeReady) {
+        if (!initialHomeReady) {
+            kotlinx.coroutines.delay(1200)
+            initialHomeReady = true
+        }
+    }
     var offlineLaunchRouteHandled by rememberSaveable { mutableStateOf(false) }
     var networkToastBaselineReady by rememberSaveable { mutableStateOf(false) }
     var lastNetworkToastCondition by rememberSaveable { mutableStateOf(NetworkCondition.Unknown.name) }
@@ -2291,7 +2297,7 @@ private fun MainAppContent(
                                     )
                                 }
 
-                                if (!isTabletLayout && useNativeBottomTabs && tabsRouteActive) {
+                                if (!isTabletLayout && useNativeBottomTabs && tabsRouteActive && nativeProfileSwitcherVisible) {
                                     NativeProfileSwitcherPopup(
                                         visible = nativeProfileSwitcherVisible,
                                         isSwitchingProfile = profileSwitchLoading,
