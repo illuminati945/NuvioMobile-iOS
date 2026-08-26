@@ -120,7 +120,6 @@ import com.nuvio.app.core.ui.PosterZoomAnchorHolder
 import com.nuvio.app.core.ui.PosterZoomOverlayAction
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
-import com.nuvio.app.core.ui.IosSwipeBackContainer
 import com.nuvio.app.core.ui.NuvioStatusModal
 import com.nuvio.app.core.ui.PlatformBackHandler
 import com.nuvio.app.core.ui.platformExitApp
@@ -948,12 +947,6 @@ private fun MainAppContent(
     }
     var initialHomeReady by rememberSaveable(ownsAppRuntime) {
         mutableStateOf(!ownsAppRuntime)
-    }
-    LaunchedEffect(initialHomeReady) {
-        if (!initialHomeReady) {
-            kotlinx.coroutines.delay(1200)
-            initialHomeReady = true
-        }
     }
     var offlineLaunchRouteHandled by rememberSaveable { mutableStateOf(false) }
     var networkToastBaselineReady by rememberSaveable { mutableStateOf(false) }
@@ -2297,7 +2290,7 @@ private fun MainAppContent(
                                     )
                                 }
 
-                                if (!isTabletLayout && useNativeBottomTabs && tabsRouteActive && nativeProfileSwitcherVisible) {
+                                if (!isTabletLayout && useNativeBottomTabs && tabsRouteActive) {
                                     NativeProfileSwitcherPopup(
                                         visible = nativeProfileSwitcherVisible,
                                         isSwitchingProfile = profileSwitchLoading,
@@ -2381,148 +2374,142 @@ private fun MainAppContent(
                     val directorRole = stringResource(Res.string.person_role_director)
                     val writerRole = stringResource(Res.string.person_role_writer)
                     val creatorRole = stringResource(Res.string.person_role_creator)
-                    IosSwipeBackContainer(onBack = onBack) {
-                        MetaDetailsScreen(
-                            type = route.type,
-                            id = route.id,
-                            onBack = onBack,
-                            onPlay = onPlay,
-                            onPlayManually = onPlayManually,
-                            onOpenMeta = { preview ->
-                                coroutineScope.launch {
-                                    val resolvedId = if (preview.id.startsWith("tmdb:")) {
-                                        val tmdbId = preview.id.removePrefix("tmdb:").toIntOrNull()
-                                        tmdbId?.let {
-                                            TmdbService.tmdbToImdb(
-                                                tmdbId = it,
-                                                mediaType = preview.type,
-                                            )
-                                        } ?: preview.id
-                                    } else {
-                                        preview.id
-                                    }
-                                    navController.navigate(
-                                        DetailRoute(
-                                            type = preview.type,
-                                            id = resolvedId,
-                                            title = preview.name,
-                                        ),
-                                    )
+                    MetaDetailsScreen(
+                        type = route.type,
+                        id = route.id,
+                        onBack = onBack,
+                        onPlay = onPlay,
+                        onPlayManually = onPlayManually,
+                        onOpenMeta = { preview ->
+                            coroutineScope.launch {
+                                val resolvedId = if (preview.id.startsWith("tmdb:")) {
+                                    val tmdbId = preview.id.removePrefix("tmdb:").toIntOrNull()
+                                    tmdbId?.let {
+                                        TmdbService.tmdbToImdb(
+                                            tmdbId = it,
+                                            mediaType = preview.type,
+                                        )
+                                    } ?: preview.id
+                                } else {
+                                    preview.id
                                 }
-                            },
-                            onCastClick = { person, avatarTransitionKey ->
-                                val tmdbId = person.tmdbId
-                                if (tmdbId != null && tmdbId > 0) {
-                                    navController.navigate(
-                                        PersonDetailRoute(
-                                            personId = tmdbId,
-                                            personName = person.name,
-                                            personPhoto = person.photo,
-                                            castAvatarTransitionKey = avatarTransitionKey,
-                                            preferCrew = person.role?.let {
-                                                it.equals("Director", ignoreCase = true) ||
-                                                    it.equals(directorRole, ignoreCase = true) ||
-                                                    it.equals("Writer", ignoreCase = true) ||
-                                                    it.equals(writerRole, ignoreCase = true) ||
-                                                    it.equals("Creator", ignoreCase = true)
-                                                    || it.equals(creatorRole, ignoreCase = true)
-                                            } ?: false,
-                                        ),
-                                    )
-                                }
-                            },
-                            onCompanyClick = { company, entityKind ->
-                                val tmdbId = company.tmdbId
-                                if (tmdbId != null && tmdbId > 0) {
-                                    navController.navigate(
-                                        EntityBrowseRoute(
-                                            entityKind = entityKind,
-                                            entityId = tmdbId,
-                                            entityName = company.name,
-                                            sourceType = route.type,
-                                        ),
-                                    )
-                                }
-                            },
-                            sharedTransitionScope = this@SharedTransitionLayout,
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    }
+                                navController.navigate(
+                                    DetailRoute(
+                                        type = preview.type,
+                                        id = resolvedId,
+                                        title = preview.name,
+                                    ),
+                                )
+                            }
+                        },
+                        onCastClick = { person, avatarTransitionKey ->
+                            val tmdbId = person.tmdbId
+                            if (tmdbId != null && tmdbId > 0) {
+                                navController.navigate(
+                                    PersonDetailRoute(
+                                        personId = tmdbId,
+                                        personName = person.name,
+                                        personPhoto = person.photo,
+                                        castAvatarTransitionKey = avatarTransitionKey,
+                                        preferCrew = person.role?.let {
+                                            it.equals("Director", ignoreCase = true) ||
+                                                it.equals(directorRole, ignoreCase = true) ||
+                                                it.equals("Writer", ignoreCase = true) ||
+                                                it.equals(writerRole, ignoreCase = true) ||
+                                                it.equals("Creator", ignoreCase = true)
+                                                || it.equals(creatorRole, ignoreCase = true)
+                                        } ?: false,
+                                    ),
+                                )
+                            }
+                        },
+                        onCompanyClick = { company, entityKind ->
+                            val tmdbId = company.tmdbId
+                            if (tmdbId != null && tmdbId > 0) {
+                                navController.navigate(
+                                    EntityBrowseRoute(
+                                        entityKind = entityKind,
+                                        entityId = tmdbId,
+                                        entityName = company.name,
+                                        sourceType = route.type,
+                                    ),
+                                )
+                            }
+                        },
+                        sharedTransitionScope = this@SharedTransitionLayout,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        modifier = Modifier.fillMaxSize(),
+                    )
                 }
                 entry<PersonDetailRoute> { route ->
                     val onBack = rememberGuardedPopBackStack(navController, route)
                     val animatedVisibilityScope = LocalNavAnimatedContentScope.current
-                    IosSwipeBackContainer(onBack = onBack) {
-                        PersonDetailScreen(
-                            personId = route.personId,
-                            personName = route.personName,
-                            initialProfilePhoto = route.personPhoto,
-                            avatarTransitionKey = route.castAvatarTransitionKey,
-                            preferCrew = route.preferCrew,
-                            onBack = onBack,
-                            onOpenMeta = { preview ->
-                                coroutineScope.launch {
-                                    val resolvedId = if (preview.id.startsWith("tmdb:")) {
-                                        val tmdbId = preview.id.removePrefix("tmdb:").toIntOrNull()
-                                        tmdbId?.let {
-                                            TmdbService.tmdbToImdb(
-                                                tmdbId = it,
-                                                mediaType = preview.type,
-                                            )
-                                        } ?: preview.id
-                                    } else {
-                                        preview.id
-                                    }
-                                    navController.navigate(
-                                        DetailRoute(
-                                            type = preview.type,
-                                            id = resolvedId,
-                                            title = preview.name,
-                                        ),
-                                    )
+                    PersonDetailScreen(
+                        personId = route.personId,
+                        personName = route.personName,
+                        initialProfilePhoto = route.personPhoto,
+                        avatarTransitionKey = route.castAvatarTransitionKey,
+                        preferCrew = route.preferCrew,
+                        onBack = onBack,
+                        onOpenMeta = { preview ->
+                            coroutineScope.launch {
+                                val resolvedId = if (preview.id.startsWith("tmdb:")) {
+                                    val tmdbId = preview.id.removePrefix("tmdb:").toIntOrNull()
+                                    tmdbId?.let {
+                                        TmdbService.tmdbToImdb(
+                                            tmdbId = it,
+                                            mediaType = preview.type,
+                                        )
+                                    } ?: preview.id
+                                } else {
+                                    preview.id
                                 }
-                            },
-                            sharedTransitionScope = this@SharedTransitionLayout,
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    }
+                                navController.navigate(
+                                    DetailRoute(
+                                        type = preview.type,
+                                        id = resolvedId,
+                                        title = preview.name,
+                                    ),
+                                )
+                            }
+                        },
+                        sharedTransitionScope = this@SharedTransitionLayout,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        modifier = Modifier.fillMaxSize(),
+                    )
                 }
                 entry<EntityBrowseRoute> { route ->
                     val onBack = rememberGuardedPopBackStack(navController, route)
-                    IosSwipeBackContainer(onBack = onBack) {
-                        TmdbEntityBrowseScreen(
-                            entityKind = TmdbEntityKind.fromRouteValue(route.entityKind),
-                            entityId = route.entityId,
-                            entityName = route.entityName,
-                            sourceType = route.sourceType,
-                            onBack = onBack,
-                            onOpenMeta = { preview ->
-                                coroutineScope.launch {
-                                    val resolvedId = if (preview.id.startsWith("tmdb:")) {
-                                        val tmdbId = preview.id.removePrefix("tmdb:").toIntOrNull()
-                                        tmdbId?.let {
-                                            TmdbService.tmdbToImdb(
-                                                tmdbId = it,
-                                                mediaType = preview.type,
-                                            )
-                                        } ?: preview.id
-                                    } else {
-                                        preview.id
-                                    }
-                                    navController.navigate(
-                                        DetailRoute(
-                                            type = preview.type,
-                                            id = resolvedId,
-                                            title = preview.name,
-                                        ),
-                                    )
+                    TmdbEntityBrowseScreen(
+                        entityKind = TmdbEntityKind.fromRouteValue(route.entityKind),
+                        entityId = route.entityId,
+                        entityName = route.entityName,
+                        sourceType = route.sourceType,
+                        onBack = onBack,
+                        onOpenMeta = { preview ->
+                            coroutineScope.launch {
+                                val resolvedId = if (preview.id.startsWith("tmdb:")) {
+                                    val tmdbId = preview.id.removePrefix("tmdb:").toIntOrNull()
+                                    tmdbId?.let {
+                                        TmdbService.tmdbToImdb(
+                                            tmdbId = it,
+                                            mediaType = preview.type,
+                                        )
+                                    } ?: preview.id
+                                } else {
+                                    preview.id
                                 }
-                            },
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    }
+                                navController.navigate(
+                                    DetailRoute(
+                                        type = preview.type,
+                                        id = resolvedId,
+                                        title = preview.name,
+                                    ),
+                                )
+                            }
+                        },
+                        modifier = Modifier.fillMaxSize(),
+                    )
                 }
                 entry<StreamRoute> { route ->
                     val onBack = rememberGuardedPopBackStack(navController, route)
@@ -3076,125 +3063,87 @@ private fun MainAppContent(
                         }
                     }
 
-                    IosSwipeBackContainer(onBack = onBack) {
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            StreamsScreen(
-                                type = launch.type,
-                                videoId = effectiveVideoId,
-                                parentMetaId = launch.parentMetaId ?: effectiveVideoId,
-                                parentMetaType = launch.parentMetaType ?: launch.type,
-                                title = launch.title,
-                                logo = launch.logo,
-                                poster = launch.poster,
-                                background = launch.background,
-                                seasonNumber = launch.seasonNumber,
-                                episodeNumber = launch.episodeNumber,
-                                episodeTitle = launch.episodeTitle,
-                                episodeThumbnail = launch.episodeThumbnail,
-                                episodeOverview = launch.pauseDescription,
-                                resumePositionMs = launch.resumePositionMs,
-                                resumeProgressFraction = launch.resumeProgressFraction,
-                                manualSelection = launch.manualSelection,
-                                startFromBeginning = launch.startFromBeginning,
-                                onStreamSelected = { stream, resolvedResumePositionMs, resolvedResumeProgressFraction ->
-                                    openSelectedStream(
-                                        stream = stream,
-                                        resolvedResumePositionMs = resolvedResumePositionMs,
-                                        resolvedResumeProgressFraction = resolvedResumeProgressFraction,
-                                        forceExternal = false,
-                                        forceInternal = false,
-                                    )
-                                },
-                                onStreamActionOpen = { stream, openExternally, resolvedResumePositionMs, resolvedResumeProgressFraction ->
-                                    openSelectedStream(
-                                        stream = stream,
-                                        resolvedResumePositionMs = resolvedResumePositionMs,
-                                        resolvedResumeProgressFraction = resolvedResumeProgressFraction,
-                                        forceExternal = openExternally,
-                                        forceInternal = !openExternally,
-                                    )
-                                },
-                                onBack = onBack,
-                                modifier = Modifier.fillMaxSize(),
-                            )
-                            pendingP2pStreamOpen?.let { pending ->
-                                P2pConsentDialog(
-                                    onEnableP2p = {
-                                        P2pSettingsRepository.setP2pEnabled(true)
-                                        pendingP2pStreamOpen = null
-                                        openP2pStream(
-                                            stream = pending.stream,
-                                            resolvedResumePositionMs = pending.resumePositionMs,
-                                            resolvedResumeProgressFraction = pending.resumeProgressFraction,
-                                            replaceStreamRoute = pending.isAutoPlay,
-                                        )
-                                    },
-                                    onDismiss = {
-                                        if (pending.isAutoPlay) {
-                                            StreamsRepository.skipAutoPlayStream(pending.stream)
-                                            StreamsRepository.consumeAutoPlay()
-                                        }
-                                        pendingP2pStreamOpen = null
-                                    },
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        StreamsScreen(
+                            type = launch.type,
+                            videoId = effectiveVideoId,
+                            parentMetaId = launch.parentMetaId ?: effectiveVideoId,
+                            parentMetaType = launch.parentMetaType ?: launch.type,
+                            title = launch.title,
+                            logo = launch.logo,
+                            poster = launch.poster,
+                            background = launch.background,
+                            seasonNumber = launch.seasonNumber,
+                            episodeNumber = launch.episodeNumber,
+                            episodeTitle = launch.episodeTitle,
+                            episodeThumbnail = launch.episodeThumbnail,
+                            episodeOverview = launch.pauseDescription,
+                            resumePositionMs = launch.resumePositionMs,
+                            resumeProgressFraction = launch.resumeProgressFraction,
+                            manualSelection = launch.manualSelection,
+                            startFromBeginning = launch.startFromBeginning,
+                            onStreamSelected = { stream, resolvedResumePositionMs, resolvedResumeProgressFraction ->
+                                openSelectedStream(
+                                    stream = stream,
+                                    resolvedResumePositionMs = resolvedResumePositionMs,
+                                    resolvedResumeProgressFraction = resolvedResumeProgressFraction,
+                                    forceExternal = false,
+                                    forceInternal = false,
                                 )
-                            }
-                            if (resolvingDebridStream) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(MaterialTheme.nuvio.colors.overlayScrim.copy(alpha = MaterialTheme.nuvio.opacity.overlayHeavy)),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.spacedBy(MaterialTheme.nuvio.spacing.cardPadding),
-                                    ) {
-                                        NuvioLoadingIndicator(color = MaterialTheme.nuvio.colors.playerControlsForeground)
-                                        Text(
-                                            text = stringResource(Res.string.streams_finding_source),
-                                            color = MaterialTheme.nuvio.colors.playerControlsForeground.copy(alpha = MaterialTheme.nuvio.opacity.overlayHeavy),
-                                            style = MaterialTheme.typography.bodyMedium,
-                                        )
+                            },
+                            onStreamActionOpen = { stream, openExternally, resolvedResumePositionMs, resolvedResumeProgressFraction ->
+                                openSelectedStream(
+                                    stream = stream,
+                                    resolvedResumePositionMs = resolvedResumePositionMs,
+                                    resolvedResumeProgressFraction = resolvedResumeProgressFraction,
+                                    forceExternal = openExternally,
+                                    forceInternal = !openExternally,
+                                )
+                            },
+                            onBack = onBack,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                        pendingP2pStreamOpen?.let { pending ->
+                            P2pConsentDialog(
+                                onEnableP2p = {
+                                    P2pSettingsRepository.setP2pEnabled(true)
+                                    pendingP2pStreamOpen = null
+                                    openP2pStream(
+                                        stream = pending.stream,
+                                        resolvedResumePositionMs = pending.resumePositionMs,
+                                        resolvedResumeProgressFraction = pending.resumeProgressFraction,
+                                        replaceStreamRoute = pending.isAutoPlay,
+                                    )
+                                },
+                                onDismiss = {
+                                    if (pending.isAutoPlay) {
+                                        StreamsRepository.skipAutoPlayStream(pending.stream)
+                                        StreamsRepository.consumeAutoPlay()
                                     }
+                                    pendingP2pStreamOpen = null
+                                },
+                            )
+                        }
+                        if (resolvingDebridStream) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(MaterialTheme.nuvio.colors.overlayScrim.copy(alpha = MaterialTheme.nuvio.opacity.overlayHeavy)),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.nuvio.spacing.cardPadding),
+                                ) {
+                                    NuvioLoadingIndicator(color = MaterialTheme.nuvio.colors.playerControlsForeground)
+                                    Text(
+                                        text = stringResource(Res.string.streams_finding_source),
+                                        color = MaterialTheme.nuvio.colors.playerControlsForeground.copy(alpha = MaterialTheme.nuvio.opacity.overlayHeavy),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                    )
                                 }
                             }
                         }
-                    }
-                }
-                entry<CatalogRoute> { route ->
-                    val onBack = rememberGuardedPopBackStack(navController, route)
-                    val launch = remember(route.launchId) { CatalogLaunchStore.get(route.launchId) }
-                    if (launch == null) {
-                        LaunchedEffect(route.launchId) {
-                            onBack()
-                        }
-                        return@entry
-                    }
-                    val target = launch.target
-                    IosSwipeBackContainer(onBack = onBack) {
-                        CatalogScreen(
-                            title = launch.title,
-                            subtitle = launch.subtitle,
-                            target = target,
-                            onBack = onBack,
-                            onPosterClick = { meta ->
-                                navController.navigate(DetailRoute(type = meta.type, id = meta.id, title = meta.name))
-                            },
-                            onPosterLongClick = { meta ->
-                                openPosterActions(
-                                    if (target is CatalogTarget.Library) {
-                                        PosterActionTarget(
-                                            preview = meta,
-                                            libraryItem = meta.toLibraryItem(savedAtEpochMs = 0L),
-                                            libraryListKey = target.sectionType,
-                                        )
-                                    } else {
-                                        PosterActionTarget(preview = meta)
-                                    },
-                                )
-                            },
-                            modifier = Modifier.fillMaxSize(),
-                        )
                     }
                 }
                 entry<PlayerRoute>(
@@ -3346,124 +3295,110 @@ private fun MainAppContent(
                         navController = navController,
                         route = route,
                     )
-                    IosSwipeBackContainer(onBack = onBack) {
-                        HomescreenSettingsScreen(
-                            onBack = onBack,
-                        )
-                    }
+                    HomescreenSettingsScreen(
+                        onBack = onBack,
+                    )
                 }
                 entry<MetaScreenSettingsRoute> { route ->
                     val onBack = rememberGuardedPopBackStack(
                         navController = navController,
                         route = route,
                     )
-                    IosSwipeBackContainer(onBack = onBack) {
-                        MetaScreenSettingsScreen(
-                            onBack = onBack,
-                        )
-                    }
+                    MetaScreenSettingsScreen(
+                        onBack = onBack,
+                    )
                 }
                 entry<ContinueWatchingSettingsRoute> { route ->
                     val onBack = rememberGuardedPopBackStack(
                         navController = navController,
                         route = route,
                     )
-                    IosSwipeBackContainer(onBack = onBack) {
-                        ContinueWatchingSettingsScreen(
-                            onBack = onBack,
-                        )
-                    }
+                    ContinueWatchingSettingsScreen(
+                        onBack = onBack,
+                    )
                 }
                 entry<SettingsPageRoute> { route ->
                     val onBack = rememberGuardedPopBackStack(
                         navController = navController,
                         route = route,
                     )
-                    IosSwipeBackContainer(onBack = onBack) {
-                        SettingsScreen(
-                            modifier = Modifier.fillMaxSize(),
-                            initialPageName = route.pageName,
-                            rootActionsEnabled = false,
-                            onNavigatePage = { pageName, title ->
-                                navController.navigate(SettingsPageRoute(pageName, title))
-                            },
-                            onExternalBack = onBack,
-                            showInternalHeader = !useNativeNavigation,
-                            onSwitchProfile = onSwitchProfile,
-                            onDownloadsClick = {
-                                navController.navigate(DownloadsSettingsRoute(downloadsSettingsTitle))
-                            },
-                            onCollectionsClick = {
-                                navController.navigate(CollectionsRoute(collectionsTitle))
-                            },
-                            onSupportersContributorsClick = {
-                                if (AppFeaturePolicy.supportersContributorsPageEnabled) {
-                                    navController.navigate(SupportersContributorsSettingsRoute(supportersSettingsTitle))
-                                }
-                            },
-                            onCheckForUpdatesClick = if (AppFeaturePolicy.inAppUpdaterEnabled) {
-                                {
-                                    appUpdaterController.checkForUpdates(
-                                        force = true,
-                                        showNoUpdateFeedback = true,
-                                    )
-                                }
-                            } else {
-                                null
-                            },
-                            onTestUpdateBannerClick = if (
-                                AppFeaturePolicy.inAppUpdaterEnabled && AppUpdaterPlatform.isDebugBuild
-                            ) {
-                                appUpdaterController::showDebugTestUpdate
-                            } else {
-                                null
-                            },
-                        )
-                    }
+                    SettingsScreen(
+                        modifier = Modifier.fillMaxSize(),
+                        initialPageName = route.pageName,
+                        rootActionsEnabled = false,
+                        onNavigatePage = { pageName, title ->
+                            navController.navigate(SettingsPageRoute(pageName, title))
+                        },
+                        onExternalBack = onBack,
+                        showInternalHeader = !useNativeNavigation,
+                        onSwitchProfile = onSwitchProfile,
+                        onDownloadsClick = {
+                            navController.navigate(DownloadsSettingsRoute(downloadsSettingsTitle))
+                        },
+                        onCollectionsClick = {
+                            navController.navigate(CollectionsRoute(collectionsTitle))
+                        },
+                        onSupportersContributorsClick = {
+                            if (AppFeaturePolicy.supportersContributorsPageEnabled) {
+                                navController.navigate(SupportersContributorsSettingsRoute(supportersSettingsTitle))
+                            }
+                        },
+                        onCheckForUpdatesClick = if (AppFeaturePolicy.inAppUpdaterEnabled) {
+                            {
+                                appUpdaterController.checkForUpdates(
+                                    force = true,
+                                    showNoUpdateFeedback = true,
+                                )
+                            }
+                        } else {
+                            null
+                        },
+                        onTestUpdateBannerClick = if (
+                            AppFeaturePolicy.inAppUpdaterEnabled && AppUpdaterPlatform.isDebugBuild
+                        ) {
+                            appUpdaterController::showDebugTestUpdate
+                        } else {
+                            null
+                        },
+                    )
                 }
                 entry<DownloadsSettingsRoute> { route ->
                     val onBack = rememberGuardedPopBackStack(
                         navController = navController,
                         route = route,
                     )
-                    IosSwipeBackContainer(onBack = onBack) {
-                        DownloadsScreen(
-                            onBack = onBack,
-                            onOpenDownload = ::openDownloadedItem,
-                            onNavigateToShow = if (useNativeNavigation) {
-                                { showId, title ->
-                                    navController.navigate(DownloadShowRoute(showId, title))
-                                }
-                            } else {
-                                null
-                            },
-                        )
-                    }
+                    DownloadsScreen(
+                        onBack = onBack,
+                        onOpenDownload = ::openDownloadedItem,
+                        onNavigateToShow = if (useNativeNavigation) {
+                            { showId, title ->
+                                navController.navigate(DownloadShowRoute(showId, title))
+                            }
+                        } else {
+                            null
+                        },
+                    )
                 }
                 entry<DownloadShowRoute> { route ->
                     val onBack = rememberGuardedPopBackStack(
                         navController = navController,
                         route = route,
                     )
-                    IosSwipeBackContainer(onBack = onBack) {
-                        DownloadsScreen(
-                            onBack = onBack,
-                            onOpenDownload = ::openDownloadedItem,
-                            initialShowId = route.showId,
-                            onBackFromShow = onBack,
-                        )
-                    }
+                    DownloadsScreen(
+                        onBack = onBack,
+                        onOpenDownload = ::openDownloadedItem,
+                        initialShowId = route.showId,
+                        onBackFromShow = onBack,
+                    )
                 }
                 entry<AddonsSettingsRoute> { route ->
                     val onBack = rememberGuardedPopBackStack(
                         navController = navController,
                         route = route,
                     )
-                    IosSwipeBackContainer(onBack = onBack) {
-                        AddonsSettingsScreen(
-                            onBack = onBack,
-                        )
-                    }
+                    AddonsSettingsScreen(
+                        onBack = onBack,
+                    )
                 }
                 if (AppFeaturePolicy.pluginsEnabled) {
                     entry<PluginsSettingsRoute> { route ->
@@ -3471,11 +3406,9 @@ private fun MainAppContent(
                             navController = navController,
                             route = route,
                         )
-                        IosSwipeBackContainer(onBack = onBack) {
-                            PluginsSettingsScreen(
-                                onBack = onBack,
-                            )
-                        }
+                        PluginsSettingsScreen(
+                            onBack = onBack,
+                        )
                     }
                 }
                 entry<AccountSettingsRoute> { route ->
@@ -3483,11 +3416,9 @@ private fun MainAppContent(
                         navController = navController,
                         route = route,
                     )
-                    IosSwipeBackContainer(onBack = onBack) {
-                        AccountSettingsScreen(
-                            onBack = onBack,
-                        )
-                    }
+                    AccountSettingsScreen(
+                        onBack = onBack,
+                    )
                 }
                 entry<SupportersContributorsSettingsRoute> { route ->
                     val onBack = rememberGuardedPopBackStack(
@@ -3495,11 +3426,9 @@ private fun MainAppContent(
                         route = route,
                     )
                     if (AppFeaturePolicy.supportersContributorsPageEnabled) {
-                        IosSwipeBackContainer(onBack = onBack) {
-                            SupportersContributorsSettingsScreen(
-                                onBack = onBack,
-                            )
-                        }
+                        SupportersContributorsSettingsScreen(
+                            onBack = onBack,
+                        )
                     } else {
                         LaunchedEffect(Unit) {
                             onBack()
@@ -3511,61 +3440,55 @@ private fun MainAppContent(
                         navController = navController,
                         route = route,
                     )
-                    IosSwipeBackContainer(onBack = onBack) {
-                        LicensesAttributionsSettingsScreen(
-                            onBack = onBack,
-                        )
-                    }
+                    LicensesAttributionsSettingsScreen(
+                        onBack = onBack,
+                    )
                 }
                 entry<CollectionsRoute> { route ->
                     val onBack = rememberGuardedPopBackStack(
                         navController = navController,
                         route = route,
                     )
-                    IosSwipeBackContainer(onBack = onBack) {
-                        CollectionManagementScreen(
-                            onBack = onBack,
-                            onNavigateToEditor = { collectionId ->
-                                val editorTitle = collectionId
-                                    ?.let { id ->
-                                        CollectionRepository.collections.value.firstOrNull { it.id == id }?.title
-                                    }
-                                    .orEmpty()
-                                navController.navigate(
-                                    CollectionEditorRoute(
-                                        collectionId = collectionId,
-                                        title = editorTitle.ifBlank { newCollectionTitle },
-                                    )
+                    CollectionManagementScreen(
+                        onBack = onBack,
+                        onNavigateToEditor = { collectionId ->
+                            val editorTitle = collectionId
+                                ?.let { id ->
+                                    CollectionRepository.collections.value.firstOrNull { it.id == id }?.title
+                                }
+                                .orEmpty()
+                            navController.navigate(
+                                CollectionEditorRoute(
+                                    collectionId = collectionId,
+                                    title = editorTitle.ifBlank { newCollectionTitle },
                                 )
-                            },
-                        )
-                    }
+                            )
+                        },
+                    )
                 }
                 entry<CollectionEditorRoute> { route ->
                     val onBack = rememberGuardedPopBackStack(
                         navController = navController,
                         route = route,
                     )
-                    IosSwipeBackContainer(onBack = onBack) {
-                        CollectionEditorScreen(
-                            collectionId = route.collectionId,
-                            onBack = onBack,
-                            initialPage = if (useNativeNavigation) CollectionEditorPage.Root else null,
-                            onNavigateToPage = if (useNativeNavigation) {
-                                { page, title ->
-                                    navController.navigate(
-                                        CollectionEditorPageRoute(
-                                            collectionId = route.collectionId,
-                                            pageName = page.name,
-                                            title = title,
-                                        )
+                    CollectionEditorScreen(
+                        collectionId = route.collectionId,
+                        onBack = onBack,
+                        initialPage = if (useNativeNavigation) CollectionEditorPage.Root else null,
+                        onNavigateToPage = if (useNativeNavigation) {
+                            { page, title ->
+                                navController.navigate(
+                                    CollectionEditorPageRoute(
+                                        collectionId = route.collectionId,
+                                        pageName = page.name,
+                                        title = title,
                                     )
-                                }
-                            } else {
-                                null
-                            },
-                        )
-                    }
+                                )
+                            }
+                        } else {
+                            null
+                        },
+                    )
                 }
                 entry<CollectionEditorPageRoute> { route ->
                     val page = remember(route.pageName) {
@@ -3579,38 +3502,34 @@ private fun MainAppContent(
                         LaunchedEffect(route) { onBack() }
                         return@entry
                     }
-                    IosSwipeBackContainer(onBack = onBack) {
-                        CollectionEditorScreen(
-                            collectionId = route.collectionId,
-                            initialPage = page,
-                            initializeRepository = false,
-                            onBack = onBack,
-                            onNavigateToPage = { nextPage, title ->
-                                navController.navigate(
-                                    CollectionEditorPageRoute(
-                                        collectionId = route.collectionId,
-                                        pageName = nextPage.name,
-                                        title = title,
-                                    )
+                    CollectionEditorScreen(
+                        collectionId = route.collectionId,
+                        initialPage = page,
+                        initializeRepository = false,
+                        onBack = onBack,
+                        onNavigateToPage = { nextPage, title ->
+                            navController.navigate(
+                                CollectionEditorPageRoute(
+                                    collectionId = route.collectionId,
+                                    pageName = nextPage.name,
+                                    title = title,
                                 )
-                            },
-                        )
-                    }
+                            )
+                        },
+                    )
                 }
                 entry<FolderDetailRoute> { route ->
                     val onBack = rememberGuardedPopBackStack(navController, route)
                     LaunchedEffect(route.collectionId, route.folderId) {
                         FolderDetailRepository.initialize(route.collectionId, route.folderId)
                     }
-                    IosSwipeBackContainer(onBack = onBack) {
-                        FolderDetailScreen(
-                            onBack = onBack,
-                            onCatalogClick = onCatalogClick,
-                            onPosterClick = { meta ->
-                                navController.navigate(DetailRoute(type = meta.type, id = meta.id, title = meta.name))
-                            },
-                        )
-                    }
+                    FolderDetailScreen(
+                        onBack = onBack,
+                        onCatalogClick = onCatalogClick,
+                        onPosterClick = { meta ->
+                            navController.navigate(DetailRoute(type = meta.type, id = meta.id, title = meta.name))
+                        },
+                    )
                 }
                     }.let { provider ->
                         { key ->

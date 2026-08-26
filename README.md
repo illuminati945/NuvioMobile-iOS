@@ -29,7 +29,7 @@
 
 #### 1. LiveContainer / LiveLauncher
 - Tap [**Open in LiveContainer**](https://altdirect.app/?url=https%3A%2F%2Fraw.githubusercontent.com%2Filluminati945%2FNuvioMobile-iOS%2Fmain%2FNuvioEnhanced.json&r=livecontainer), or download the `.ipa` from [**Releases**](https://github.com/illuminati945/NuvioMobile-iOS/releases/latest).
-- In **LiveContainer**, tap **`+`** (top right) and select `Nuvio-v0.4.17-Enhanced.ipa`.
+- In **LiveContainer**, tap **`+`** (top right) and select `Nuvio-v0.4.18-Enhanced.ipa`.
 
 #### 2. SideStore
 - Tap [**Add to SideStore**](https://altdirect.app/?url=https%3A%2F%2Fraw.githubusercontent.com%2Filluminati945%2FNuvioMobile-iOS%2Fmain%2FNuvioEnhanced.json&r=sidestore), or add the source URL manually in **Sources ➔ `+`**:

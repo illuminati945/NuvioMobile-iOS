@@ -21,12 +21,12 @@
       "category": "entertainment",
       "versions": [
         {
-          "version": "0.4.17",
-          "buildVersion": "115",
-          "date": "2026-08-26T07:41:52Z",
-          "localizedDescription": "# \ud83d\ude80 Nuvio Enhanced iOS v0.4.17\n\n- Latest upstream enhancements & fixes\n- SideStore and AltStore community source support\n- Automated GitHub Actions compilation\n- Live TV and M3U EPG integration\n- Subtitle styling and language grouping\n- Performance and memory stability improvements",
-          "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.17/Nuvio-v0.4.17-Enhanced.ipa",
-          "size": 61333887,
+          "version": "0.4.18",
+          "buildVersion": "122",
+          "date": "2026-08-26T08:15:00Z",
+          "localizedDescription": "# 🚀 Nuvio Enhanced iOS v0.4.18\n\n- Restored 100% full touch and button responsiveness across all screens\n- Reverted invasive container overlays to guarantee clean native iOS touch dispatch\n- Apple Liquid Glass frosted translucent floating tab bar\n- Tab-switch layout lock to eliminate vertical menu bar shifts",
+          "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.18/Nuvio-v0.4.18-Enhanced.ipa",
+          "size": 61304565,
           "minOSVersion": "16.0"
         }
       ]

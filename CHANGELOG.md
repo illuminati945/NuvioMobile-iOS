@@ -3,6 +3,17 @@
 All notable Nuvio Enhanced changes are recorded here. GitHub release notes use the
 same user-facing summary so the in-app updater can display it before download.
 
+## 0.4.18 - 2026-08-26
+
+### Fixed & Enhanced
+
+- **Full Touch & Button Responsiveness Restored**: Removed invasive container gesture overlays that interfered with UIKit and Compose Multiplatform touch hit-testing, returning the navigation tree to the clean, proven state of `v0.4.15`.
+- **Apple Liquid Glass Navigation Bar**: Retained the smooth frosted glass floating navigation pill with specular border sheen and locked tab transitions.
+
+### Release
+
+- Versioned as Nuvio Enhanced `0.4.18 (122)`.
+
 ## 0.4.17 - 2026-08-26
 
 ### Fixed & Enhanced

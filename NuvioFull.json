@@ -21,12 +21,12 @@
       "category": "entertainment",
       "versions": [
         {
-          "version": "0.4.17",
-          "buildVersion": "121",
-          "date": "2026-08-26T06:30:00Z",
-          "localizedDescription": "# 🚀 Nuvio Full iOS v0.4.17\n\nFull official build with touch and button click responsiveness fix, non-blocking native iOS edge-swipe back gestures, Liquid Glass floating tab bar, stable navigation container, indefinite background downloads, notification support, and Files app access.",
-          "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.17/Nuvio-v0.4.17-Full.ipa",
-          "size": 61333887,
+          "version": "0.4.18",
+          "buildVersion": "122",
+          "date": "2026-08-26T08:15:00Z",
+          "localizedDescription": "# 🚀 Nuvio Full iOS v0.4.18\n\nFull official build with complete touch and button responsiveness restored, clean native iOS touch dispatch, Apple Liquid Glass floating tab bar, stable navigation container, indefinite background downloads, notification support, and Files app access.",
+          "downloadURL": "https://github.com/illuminati945/NuvioMobile-iOS/releases/download/v0.4.18/Nuvio-v0.4.18-Full.ipa",
+          "size": 61304565,
           "minOSVersion": "16.0"
         }
       ]
